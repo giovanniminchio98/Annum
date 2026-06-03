@@ -26,12 +26,29 @@ This README is updated on every significant commit. If a session ends mid-work:
 | Phase | Status | Notes |
 |---|---|---|
 | Project setup | ✅ Done | Branch created, repo initialized |
-| Initial `index.html` draft (1859–2026, horizontal) | ✅ Done | Committed `08cd230` — 168 cards, all features |
-| **Full rewrite: Big Bang → Today, vertical scroller** | 🔄 In progress | Agent writing now — ~172 events, 25 eras |
+| Initial draft (1859–2026, horizontal scroll) | ✅ Done | Commit `08cd230` — 168 cards, all features |
+| **Full rewrite: Big Bang → Today, vertical scroller** | ✅ Done | Commit `ceb365f` — 89 events, 25 eras |
+| Expand events: fill gaps to ~172 events | ⏳ Next | Add missing ancient/medieval/modern events |
+| Enable GitHub Pages | ⏳ Pending | Repo owner enables in GitHub Settings |
 | README continuity docs | ✅ Done | This file, updated regularly |
 
-**Last known good state:** `08cd230` — working app, 1859–2026, horizontal scroll, all interactive features.  
-**In progress:** Complete rewrite with Big Bang scope + vertical right-side scroller layout.
+**Last known good state:** `ceb365f` — full working app, Big Bang → June 2026, vertical scroller.
+
+### What's in the current build (`ceb365f`)
+- **89 events** from Big Bang (13.8B BCE) to Today (June 2026)  
+- **25 era color themes** with smooth CSS transitions  
+- **Layout:** center detail panel (era gradient bg, full narrative) + 220px right vertical scroller  
+- **Scroll:** fixed cursor line at 33% from top, nearest item = active, wheel anywhere scrolls the strip  
+- **Features:** auto-play, time capsule (localStorage), fate meter, Web Audio ambient sound, year/event selector modal with search + era chips, time gap display, keyboard ↑↓, touch swipe
+
+### What's missing / next steps
+1. **More events** — currently 89, target ~172. Gaps mainly in:
+   - Ancient world (500 BCE – 476 CE): missing Parthenon, Socrates, Alexander, Caesar's death, Pompeii
+   - Medieval (476–1400): missing Charlemagne, Crusades, Magna Carta, Black Death
+   - Renaissance → 1800: missing Luther, Galileo, Newton, French Revolution
+   - Modern 1859–1999: missing ~40 key events (Titanic, WWI detail, Moon landing, etc.)
+2. **GitHub Pages setup** — needs to be enabled by the repo owner
+3. **Polish pass** — test on mobile, check era transitions on fast scroll
 
 ---
 
