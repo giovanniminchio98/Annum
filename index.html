@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Annum — A Chronicle of History</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a0a00;
+  --accent: #c8a26b;
+  --text: #f0e0c0;
+  --bg2: rgba(255,255,255,0.06);
+  --transition-speed: 0.8s;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+}
+
+/* ── HEADER ── */
+#header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+#header-left { display: flex; align-items: center; gap: 12px; }
+#app-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--accent); letter-spacing: 0.15em; transition: color 0.8s; }
+
+#current-year-display {
+  font-size: 2rem; font-weight: 900; font-family: 'Playfair Display', serif;
+  color: var(--accent); transition: color 0.8s;
+  min-width: 70px;
+}
+
+#header-right { display: flex; align-items: center; gap: 10px; }
+
+.hdr-btn {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text); border-radius: 8px; padding: 6px 14px;
+  font-size: 0.8rem; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;
+}
+.hdr-btn:hover { background: rgba(255,255,255,0.16); }
+
+/* Fate Meter */
+#fate-meter {
+  display: flex; align-items: center; gap: 6px; font-size: 0.75rem;
+}
+#fate-bar-wrap {
+  width: 80px; height: 8px; background: rgba(255,255,255,0.1);
+  border-radius: 4px; overflow: hidden;
+}
+#fate-hero-bar { height: 100%; background: #4caf50; border-radius: 4px; transition: width 0.5s; }
+#fate-label { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+
+/* ── TIMELINE ── */
+#timeline {
+  display: flex;
+  align-items: center;
+  height: 100vh;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 70px 40px 80px;
+  gap: 24px;
+  will-change: scroll-position;
+}
+#timeline::-webkit-scrollbar { display: none; }
+.timeline-pad { min-width: calc(50vw - 210px); flex-shrink: 0; }
+
+/* ── CARD ── */
+.card {
+  scroll-snap-align: center;
+  flex-shrink: 0;
+  width: min(90vw, 420px);
+  height: 85vh;
+  max-height: 680px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.12);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: default;
+}
+.card:hover { transform: translateY(-4px); box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
+.card.active { box-shadow: 0 0 0 2px var(--accent), 0 24px 60px rgba(0,0,0,0.5); }
+
+/* Card image area */
+.card-image {
+  height: 180px; flex-shrink: 0;
+  position: relative; overflow: hidden;
+}
+.card-gradient { width: 100%; height: 100%; }
+.card-image-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 5rem; opacity: 0.25; user-select: none;
+}
+
+/* Card body */
+.card-body {
+  flex: 1; padding: 16px 20px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  overflow: hidden;
+}
+
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+
+.card-year {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.8rem; font-weight: 900; line-height: 1;
+  color: var(--accent); transition: color 0.8s;
+  flex-shrink: 0;
+}
+
+.card-badges { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+
+.badge {
+  font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em;
+  padding: 3px 9px; border-radius: 20px; text-transform: uppercase;
+}
+.badge-era {
+  background: rgba(255,255,255,0.1);
+  color: var(--accent); border: 1px solid rgba(255,255,255,0.15);
+  transition: color 0.8s;
+}
+.badge-hero   { background: rgba(76,175,80,0.25);  color: #81c784; border: 1px solid rgba(76,175,80,0.4); }
+.badge-villain{ background: rgba(244,67,54,0.25);  color: #e57373; border: 1px solid rgba(244,67,54,0.4); }
+.badge-mixed  { background: rgba(255,152,0,0.25);  color: #ffb74d; border: 1px solid rgba(255,152,0,0.4); }
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem; font-weight: 700; line-height: 1.25;
+  color: var(--text); transition: color 0.8s;
+}
+
+.card-subtitle {
+  font-size: 0.78rem; color: var(--accent); font-weight: 500;
+  transition: color 0.8s; opacity: 0.85;
+}
+
+.card-narrative {
+  font-size: 0.82rem; line-height: 1.6;
+  color: rgba(255,255,255,0.72);
+  flex: 1; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical;
+}
+
+.card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 20px 12px; border-top: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+.card-nav-hint { font-size: 0.65rem; color: rgba(255,255,255,0.3); }
+.time-capsule-btn {
+  font-size: 0.7rem; background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.55);
+  border-radius: 12px; padding: 4px 10px; cursor: pointer; transition: all 0.2s;
+}
+.time-capsule-btn:hover { background: rgba(255,255,255,0.14); color: var(--text); }
+
+.card-notes { padding: 0 20px 8px; }
+.card-note-item {
+  font-size: 0.72rem; color: rgba(255,255,255,0.5);
+  border-left: 2px solid var(--accent); padding-left: 8px;
+  margin-bottom: 4px; line-height: 1.4;
+}
+.card-note-time { font-size: 0.62rem; color: rgba(255,255,255,0.3); }
+
+/* Symbol overlay */
+.card-symbol {
+  position: absolute; bottom: 60px; right: 16px;
+  font-size: 3.5rem; opacity: 0.06; user-select: none; pointer-events: none;
+}
+
+/* ── BOTTOM BAR ── */
+#bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 6px 16px 8px;
+}
+
+#progress-bar-wrap {
+  width: 100%; height: 3px; background: rgba(255,255,255,0.1);
+  border-radius: 2px; cursor: pointer; margin-bottom: 6px;
+}
+#progress-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s, background 0.8s; }
+
+#mini-map {
+  width: 100%; height: 20px;
+  display: flex; align-items: center; gap: 1px;
+  cursor: pointer; overflow: hidden;
+}
+.mini-year {
+  flex: 1; height: 12px; border-radius: 2px;
+  background: rgba(255,255,255,0.12); transition: background 0.3s;
+  cursor: pointer; min-width: 2px;
+}
+.mini-year.active { background: var(--accent); height: 18px; }
+.mini-year:hover { opacity: 0.8; }
+
+#controls-row {
+  display: flex; align-items: center; justify-content: space-between; margin-top: 4px;
+}
+#autoplay-controls { display: flex; align-items: center; gap: 8px; }
+.ctrl-btn {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text); border-radius: 6px; padding: 4px 10px;
+  font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+}
+.ctrl-btn:hover { background: rgba(255,255,255,0.16); }
+.ctrl-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+#speed-select {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text); border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer;
+}
+#speed-select option { background: #111; }
+
+#year-count-label { font-size: 0.7rem; color: rgba(255,255,255,0.35); }
+
+/* ── YEAR SELECTOR MODAL ── */
+#year-modal {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.92); backdrop-filter: blur(20px);
+  flex-direction: column;
+}
+#year-modal.open { display: flex; }
+
+#year-modal-header {
+  padding: 20px 24px 12px;
+  display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+}
+#year-modal-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--accent); flex: 1; }
+#year-search {
+  flex: 1; max-width: 280px; background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
+  padding: 8px 14px; color: #fff; font-size: 0.9rem;
+  outline: none;
+}
+#year-search::placeholder { color: rgba(255,255,255,0.35); }
+#year-modal-close {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  color: #fff; border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 0.85rem;
+}
+
+#year-grid-wrap { flex: 1; overflow-y: auto; padding: 8px 24px 24px; }
+#year-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+  gap: 6px;
+}
+.year-cell {
+  border-radius: 8px; padding: 8px 4px; text-align: center;
+  cursor: pointer; font-size: 0.8rem; font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.08); transition: all 0.15s;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.year-cell:hover { transform: scale(1.08); filter: brightness(1.3); z-index: 1; position: relative; }
+.year-cell.active-cell { outline: 2px solid #fff; }
+.year-cell-num { font-family: 'Playfair Display', serif; font-size: 0.9rem; }
+.year-cell-dot { width: 6px; height: 6px; border-radius: 50%; }
+.year-cell.hidden { display: none; }
+
+/* ── TIME CAPSULE MODAL ── */
+#capsule-modal {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+  align-items: center; justify-content: center;
+}
+#capsule-modal.open { display: flex; }
+#capsule-box {
+  background: rgba(20,20,30,0.95); border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 16px; padding: 28px; width: min(90vw, 400px);
+}
+#capsule-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 16px; }
+#capsule-textarea {
+  width: 100%; height: 100px; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 8px;
+  color: #fff; font-size: 0.85rem; padding: 10px; resize: none; outline: none; font-family: 'Inter', sans-serif;
+}
+#capsule-actions { display: flex; gap: 10px; margin-top: 12px; justify-content: flex-end; }
+.capsule-btn { border-radius: 8px; padding: 7px 18px; font-size: 0.82rem; cursor: pointer; border: none; }
+#capsule-save { background: var(--accent); color: #000; font-weight: 600; }
+#capsule-cancel { background: rgba(255,255,255,0.1); color: #fff; }
+#capsule-existing { margin-top: 14px; max-height: 120px; overflow-y: auto; }
+
+/* ── SCROLLBAR MODAL ── */
+#year-grid-wrap::-webkit-scrollbar { width: 6px; }
+#year-grid-wrap::-webkit-scrollbar-track { background: transparent; }
+#year-grid-wrap::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+/* Sound indicator */
+#sound-btn {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text); border-radius: 8px; padding: 6px 12px;
+  font-size: 0.8rem; cursor: pointer; transition: all 0.2s;
+}
+#sound-btn.on { color: var(--accent); border-color: var(--accent); }
+
+@media (max-width: 600px) {
+  #app-title { display: none; }
+  #fate-meter { display: none; }
+  .card { width: 88vw; }
+  #year-grid { grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div id="header-left">
+    <div id="app-title">ANNUM</div>
+    <div id="current-year-display">1859</div>
+  </div>
+  <div id="fate-meter">
+    <span id="fate-label">Fate:</span>
+    <div id="fate-bar-wrap"><div id="fate-hero-bar" style="width:50%"></div></div>
+    <span id="fate-text">—</span>
+  </div>
+  <div id="header-right">
+    <button class="hdr-btn" id="sound-btn">♪ Sound</button>
+    <button class="hdr-btn" id="year-selector-btn">☰ All Years</button>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<div id="timeline">
+  <div class="timeline-pad"></div>
+  <!-- cards injected by JS -->
+  <div class="timeline-pad"></div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div id="bottom-bar">
+  <div id="progress-bar-wrap"><div id="progress-bar" style="width:0%"></div></div>
+  <div id="mini-map"></div>
+  <div id="controls-row">
+    <div id="autoplay-controls">
+      <button class="ctrl-btn" id="play-btn">▶ Play</button>
+      <select id="speed-select">
+        <option value="5000">Slow</option>
+        <option value="3000" selected>Normal</option>
+        <option value="1000">Fast</option>
+      </select>
+    </div>
+    <div id="year-count-label">1859 – 2026 · 167 years</div>
+    <div style="display:flex;gap:6px">
+      <button class="ctrl-btn" id="prev-btn">←</button>
+      <button class="ctrl-btn" id="next-btn">→</button>
+    </div>
+  </div>
+</div>
+
+<!-- YEAR MODAL -->
+<div id="year-modal">
+  <div id="year-modal-header">
+    <div id="year-modal-title">Select a Year</div>
+    <input type="text" id="year-search" placeholder="Search year or event…" autocomplete="off">
+    <button id="year-modal-close">✕ Close</button>
+  </div>
+  <div id="year-grid-wrap">
+    <div id="year-grid"></div>
+  </div>
+</div>
+
+<!-- TIME CAPSULE MODAL -->
+<div id="capsule-modal">
+  <div id="capsule-box">
+    <div id="capsule-title">Leave a Note for <span id="capsule-year-label"></span></div>
+    <textarea id="capsule-textarea" placeholder="Your thoughts about this year…"></textarea>
+    <div id="capsule-existing"></div>
+    <div id="capsule-actions">
+      <button class="capsule-btn" id="capsule-cancel">Cancel</button>
+      <button class="capsule-btn" id="capsule-save">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+const ERAS = [
+  { name:"Victorian",           start:1859, end:1900, bg:"#1a0a00", accent:"#c8a26b", text:"#f0e0c0" },
+  { name:"Edwardian",           start:1901, end:1913, bg:"#0d1a2e", accent:"#8ab4c8", text:"#e0eaf0" },
+  { name:"Great War",           start:1914, end:1919, bg:"#1a0505", accent:"#cc4444", text:"#f0e0e0" },
+  { name:"Roaring 20s",         start:1920, end:1929, bg:"#1a1400", accent:"#d4aa00", text:"#f0e8c0" },
+  { name:"Depression",          start:1930, end:1938, bg:"#101010", accent:"#888888", text:"#d0d0d0" },
+  { name:"WWII",                start:1939, end:1945, bg:"#0a1a0a", accent:"#4a8b44", text:"#e0f0e0" },
+  { name:"Cold War",            start:1946, end:1959, bg:"#0a1428", accent:"#4a8bc8", text:"#c0d8f0" },
+  { name:"Space Age",           start:1960, end:1969, bg:"#05051e", accent:"#8a6ab8", text:"#d0c0f0" },
+  { name:"Turbulent 70s",       start:1970, end:1979, bg:"#1e1000", accent:"#d45a00", text:"#f0d0b0" },
+  { name:"Neon 80s",            start:1980, end:1989, bg:"#0e001e", accent:"#ff00aa", text:"#ffd0f0" },
+  { name:"Digital Revolution",  start:1990, end:1999, bg:"#001e1e", accent:"#00d4aa", text:"#c0f0e8" },
+  { name:"New Millennium",      start:2000, end:2009, bg:"#0a1020", accent:"#4a88cc", text:"#c0d4f0" },
+  { name:"Social Age",          start:2010, end:2019, bg:"#121418", accent:"#5a8aff", text:"#c0ccff" },
+  { name:"Crisis Era",          start:2020, end:2026, bg:"#0d1117", accent:"#58a6ff", text:"#c9d1d9" },
+];
+
+const EVENTS = [
+  [1859,"hero","The First Chime","Big Ben rings for first time in London","Big Ben's great bell tolled for the first time above Westminster, its resonant voice becoming the heartbeat of an empire. The hero of this moment was time itself — made audible, made democratic, given to all who could hear.","🔔"],
+  [1860,"hero","The Unlikely Hero","Abraham Lincoln elected US president","A self-taught lawyer from a log cabin ascended to the presidency of a fractured republic. Lincoln's election was both miracle and provocation — the hero who would hold a nation together with words and will.","🎩"],
+  [1861,"villain","A Nation Divided","American Civil War begins","Brother raised arms against brother as the American experiment cracked along the fault line of slavery. The villain was not merely the Confederacy but the moral debt that had been deferred for nearly a century.","⚔️"],
+  [1862,"hero","Mercy and Song","Victor Hugo publishes Les Misérables; Gatling gun invented","Hugo gave the world Jean Valjean — a hero born from injustice — while the Gatling gun offered mechanized death to soldiers. Mercy and murder advanced together, as they often do in history.","📖"],
+  [1863,"hero","The Turning Point","Emancipation Proclamation; Battle of Gettysburg","Lincoln's proclamation did not free all enslaved people immediately, but it reframed the war as a moral crusade. At Gettysburg, the tide turned — the Union's hero-generals held the high ground and history pivoted.","🗽"],
+  [1864,"hero","Mercy Organized","Red Cross founded by Henry Dunant","Haunted by the carnage he witnessed at Solferino, Henry Dunant organized mercy into an institution. The Red Cross was a radical idea: that even in war, humanity deserved protection. A hero built from horror.","❤️"],
+  [1865,"mixed","Triumph and Tragedy","Civil War ends; Lincoln assassinated","The Union was saved and slavery abolished — the greatest triumph of the American experiment. Then a shot rang out in Ford's Theatre, and the hero who might have healed the nation was gone.","🎭"],
+  [1866,"hero","Voices Across the Sea","Transatlantic telegraph cable completed","For the first time in history, a message crossed the Atlantic in minutes rather than weeks. The cable was a spider's thread of copper that shrank the world, making distant strangers into neighbors.","🌊"],
+  [1867,"hero","Bonds and Blasts","Canada becomes a Dominion; Nobel invents dynamite","Canada emerged as a peaceable federation, proving that nations need not be born in violence. Nobel, haunted by what his explosive would do, would later fund prizes for peace.","🍁"],
+  [1868,"hero","The Rising Sun Awakens","Meiji Restoration modernizes Japan","Japan cast off centuries of feudal isolation and embarked on the most astonishing national transformation in history. The Meiji heroes chose adaptation over extinction — and won.","⛩️"],
+  [1869,"hero","The World Shrinks","Suez Canal opens; Transcontinental Railroad completed","The Suez Canal joined two seas; the American railroad joined two coasts. Distance, the ancient guardian of cultures, was defeated in a single year. Commerce and connection flooded through.","🚂"],
+  [1870,"mixed","Iron and Blood","Franco-Prussian War reshapes Europe","Bismarck's Prussia crushed France in a war of iron discipline, birthing a unified Germany. The French Third Republic rose from the ruins, but the humiliation planted seeds that would flower into catastrophe.","🗡️"],
+  [1871,"mixed","Ashes and Dreams","Paris Commune rises and falls; German Empire unified","The Paris Commune blazed briefly — a worker's revolution of extraordinary idealism — before being drowned in blood by Versailles troops. Meanwhile, a new German Empire proclaimed itself in France's greatest palace.","🔥"],
+  [1872,"hero","Nature's Treasury","Yellowstone becomes world's first national park","For the first time, a government declared that a landscape was too sacred for exploitation. Yellowstone's hot springs and geysers were set aside for all humanity — a heroic act of restraint and vision.","🌋"],
+  [1873,"villain","The First Global Crash","Vienna Stock Exchange crashes, worldwide depression","The Vienna bourse collapsed and panic spread like plague across the connected world's first global financial crisis. Banks failed, workers starved, and the myth of endless capitalist progress cracked.","📉"],
+  [1874,"hero","Eyes Unclouded","Impressionism movement born in Paris","A group of painters rejected the rigid conventions of the Academy and took their easels outdoors, chasing light. Monet, Renoir, Degas — heroes of perception — changed how humanity learned to see.","🎨"],
+  [1875,"hero","The Voice Remembered","Edison conceives the phonograph","Edison dreamed of capturing the human voice and playing it back — something that had never existed in all of human history. The phonograph would give the dead a way to speak to the living.","🎵"],
+  [1876,"hero","Hello, World","Bell invents the telephone; Custer's last stand at Little Bighorn","Bell's first words over a wire — 'Mr. Watson, come here' — opened an era of instant human connection. Meanwhile, at Little Bighorn, Custer's arrogance ended in an arrow-filled last stand.","📞"],
+  [1877,"hero","Sound Captured","Edison patents the phonograph","Edison's tinfoil cylinder played back 'Mary Had a Little Lamb' and the world was never the same. Memory, previously locked inside mortal minds, could now be externalised and replayed forever.","📻"],
+  [1878,"hero","Night Banished","Electric street lights illuminate London","London's streets shimmered with electric arc lights for the first time, pushing back the ancient tyranny of darkness. Night was no longer the villain's exclusive domain.","💡"],
+  [1879,"hero","Let There Be Light","Edison's practical light bulb; first electric railway","Edison's incandescent bulb burned steadily for hours, promising to banish darkness from every home. The first electric railway rolled in Germany, binding electricity to motion.","⚡"],
+  [1880,"villain","War in the Veld","First Boer War begins in South Africa","The Boers, descendants of Dutch settlers, rose against British annexation in the rocky veld of the Transvaal. Britain's imperial machine met unexpected resistance — a foreshadowing of empire's limits.","🏴"],
+  [1881,"villain","The Tsar Falls","Tsar Alexander II assassinated by anarchists","The reforming Tsar who had freed Russia's serfs was killed by the very radical forces his partial liberalism had energized. His son Alexander III responded with iron repression, choosing fear over progress.","💣"],
+  [1882,"villain","The Web Is Woven","Triple Alliance formed, binding Europe toward future war","Germany, Austria-Hungary, and Italy locked themselves into a mutual defence pact. The alliance system was the villain not through malice but through mechanism — a tripwire laid across the continent.","🕸️"],
+  [1883,"mixed","Fire and Stone","Krakatoa erupts catastrophically; Brooklyn Bridge opens","Krakatoa's eruption was heard 5,000 kilometres away, killing 36,000 and painting sunsets blood-red for years. On the same planet, engineers celebrated the Brooklyn Bridge — humanity's longest suspension span.","🌉"],
+  [1884,"villain","The Scramble","Berlin Conference partitions Africa among European powers","European powers carved up an entire continent in a Berlin conference room, with no African voices present. The Scramble for Africa drew borders that cut across ethnicities and planted conflicts still felt today.","🗺️"],
+  [1885,"hero","Three Wonders","Pasteur's rabies vaccine; Benz's automobile; Nietzsche's Zarathustra","Three heroes emerged simultaneously: Pasteur saved a boy from rabies with the first vaccine; Benz rolled the first true automobile; Nietzsche wrote of humanity overcoming itself. A year of transformation.","🚗"],
+  [1886,"hero","Liberty and Sugar","Statue of Liberty unveiled; Coca-Cola invented","France gifted America a copper goddess holding a torch aloft — liberty made monumental. In an Atlanta pharmacy, a curious syrup was mixed with carbonated water, and a different kind of American icon was born.","🗽"],
+  [1887,"hero","The Detective Arrives","Sherlock Holmes first appears in print","Arthur Conan Doyle gave the world its greatest fictional detective in 'A Study in Scarlet.' Holmes embodied the Victorian faith in reason, logic, and observation as the heroes of human progress.","🔍"],
+  [1888,"mixed","The Shadow in the Fog","Jack the Ripper terrorizes London; Hertz proves radio waves","In Whitechapel's fog, an unknown killer preyed on vulnerable women, becoming history's most notorious unidentified villain. Simultaneously, Hertz proved radio waves exist — a discovery that would reshape civilization.","🌫️"],
+  [1889,"hero","Iron and Land","Eiffel Tower completed; Oklahoma Territory land rush","Gustave Eiffel's impossible iron tower rose 300 metres above Paris, mocked and then beloved. In Oklahoma, 50,000 settlers raced at gunshot for land — democracy in chaotic, thundering motion.","🗼"],
+  [1890,"villain","The Last Stand","Wounded Knee massacre; Bismarck dismissed","US cavalry massacred 250 Lakota at Wounded Knee Creek, extinguishing the last armed resistance of the Plains nations. In Berlin, the young Kaiser Wilhelm dismissed Bismarck — removing the only check on his ambition.","💔"],
+  [1891,"hero","The Game Invented","Basketball invented by James Naismith","A Canadian physical education instructor nailed peach baskets to a gymnasium balcony and invented the most globally popular indoor sport. Naismith wanted a game that could be played anywhere, by anyone.","🏀"],
+  [1892,"hero","The Golden Door","Ellis Island opens; huddled masses begin arriving","Twelve million immigrants would pass through Ellis Island's great hall over the next decades — fleeing famine, persecution, and poverty. The Golden Door swung open, and America was remade by those who came through it.","🚢"],
+  [1893,"hero","First in the World","New Zealand becomes first country with women's suffrage","The women of New Zealand won the vote, becoming the first in any self-governing nation to do so. Kate Sheppard's heroic petitioning campaign proved that democracy could be enlarged by persistence.","✊"],
+  [1894,"villain","The Affair","Dreyfus Affair exposes French anti-Semitism","Captain Alfred Dreyfus was framed for treason by an army determined to find a Jewish scapegoat. The affair split France between reason and prejudice — a warning about where tribalism leads.","⚖️"],
+  [1895,"mixed","Light and Shadow","X-rays discovered; cinema invented; Oscar Wilde imprisoned","Röntgen's X-rays let doctors see inside living bodies; the Lumière brothers showed moving pictures to paying audiences; and Oscar Wilde, the era's greatest wit, was imprisoned for loving another man.","🎬"],
+  [1896,"hero","Return of the Games","First modern Olympics held in Athens; Klondike gold rush","Pierre de Coubertin revived the ancient Greek ideal in Athens, gathering 14 nations in peaceful competition. In the Yukon, gold fever drew 100,000 prospectors into subarctic wilderness on a hero's gamble.","🏅"],
+  [1897,"mixed","Diamond and Zion","Queen Victoria's Diamond Jubilee; Herzl founds Zionism","Victoria celebrated 60 years as empress of a quarter of the Earth's land — the apex and already the beginning of empire's decline. Theodor Herzl published his vision of a Jewish homeland, planting a dream with complex consequences.","👑"],
+  [1898,"mixed","Radium and War","Marie Curie discovers radium; Spanish-American War","Marie Curie, working in a freezing shed, discovered radium — a heroic feat that would also kill her. America fought Spain and emerged as an imperial power, liberator and occupier in the same motion.","⚗️"],
+  [1899,"mixed","Progress and Pain","Aspirin invented; Boer War begins","Bayer's aspirin offered humanity a pill against pain, a small daily heroism of chemistry. In South Africa, the Boer War began in earnest — Britain's most controversial colonial campaign.","💊"],
+  [1900,"mixed","The New Century Knocks","Boxer Rebellion in China; Freud's dream theory; Planck's quantum leap","China's Boxer Rebellion resisted foreign imperialism with ancient weapons against modern guns. Freud unlocked the unconscious; Planck introduced the quantum. Three revolutions arrived simultaneously.","🌐"],
+  [1901,"villain","The Old Queen Falls","Queen Victoria dies; McKinley assassinated; a new age stirs","The queen whose name defined an era died at 81, and the Victorian certainties died with her. President McKinley was shot at a world's fair — two pillars of the old order fallen in a single year.","⚰️"],
+  [1902,"hero","Peace, Briefly","Boer War ends; Trans-Siberian Railway completed","The Boer War ended with a negotiated peace, giving white South Africans self-government while dispossessing Black Africans. The Trans-Siberian Railway linked Europe to the Pacific — 9,289 kilometres of iron ambition.","🚂"],
+  [1903,"hero","The Brothers Fly","Wright Brothers achieve powered flight at Kitty Hawk","Orville Wright rose 120 feet above the North Carolina sand and flew for 12 seconds — the longest 12 seconds in human history. Two bicycle mechanics had solved the problem that had defeated all the experts.","✈️"],
+  [1904,"villain","The Eastern Storm","Russo-Japanese War shocks the Western world","Japan, newly modernised, defeated the Russian Empire in a war that shattered white supremacist assumptions about Asian nations. Russia's naval humiliation at Tsushima sent shockwaves through every empire.","⚓"],
+  [1905,"hero","The Miracle Year","Einstein's special relativity; Russia's Bloody Sunday","In his miracle year, Einstein published four papers that rewrote physics — E=mc² among them. In St. Petersburg, workers marched to petition the Tsar and were massacred, striking the match of revolution.","⚛️"],
+  [1906,"mixed","Earth and Steel","San Francisco earthquake kills thousands; HMS Dreadnought launched","San Francisco was destroyed in minutes — 3,000 dead, 300,000 homeless — a reminder of nature's indifference. Britain launched HMS Dreadnought, rendering every other battleship obsolete and starting a ruinous naval arms race.","🌊"],
+  [1907,"hero","Prepared for Adventure","Baden-Powell founds the Boy Scouts","Robert Baden-Powell, hero of Mafeking, took 20 boys to camp on Brownsea Island and invented scouting. His idea that adventure and service could shape character spread to 170 countries.","⛺"],
+  [1908,"hero","The Car for Everyone","Ford Model T; Tunguska event levels Siberian forest","Henry Ford's Model T made the automobile affordable to ordinary workers — democratizing mobility. In Siberia, a comet or asteroid flattened 2,000 square kilometres of forest with no warning and no victims.","🚘"],
+  [1909,"hero","Wings Over Water","Blériot crosses the English Channel; Bakelite invented","Louis Blériot flew from France to England in 37 minutes, making the Channel strategically irrelevant and Britain no longer safely an island. Bakelite, the first synthetic plastic, opened a new material age.","🛩️"],
+  [1910,"mixed","Dragon Dethroned","Qing dynasty falls; Chinese Republic stirs","The Qing dynasty, which had ruled China for 267 years, began its final collapse. The Chinese Republic was struggling to be born — modern, contested, and uncertain what it wanted to become.","🐉"],
+  [1911,"mixed","Ice and Fire","Amundsen reaches South Pole; Triangle Shirtwaist Factory fire kills 146","Roald Amundsen planted Norway's flag at the South Pole — the last great geographic prize won. In New York, 146 garment workers, mostly young immigrant women, burned to death behind locked factory doors.","🧭"],
+  [1912,"villain","The Unsinkable Sinks","Titanic sinks; Balkan Wars erupt","The Titanic was not merely a ship but a symbol of industrial civilization's hubris — and it sank on its maiden voyage with 1,500 souls. The Balkan Wars began reshaping southeastern Europe for catastrophe.","🚢"],
+  [1913,"hero","The Line and the Lady","Ford's assembly line revolution; suffragette Emily Davison at Epsom Derby","Ford's moving assembly line compressed automobile production from 12 hours to 93 minutes, birthing mass manufacturing. Emily Davison ran onto the Epsom Derby track and died for women's suffrage.","🏭"],
+  [1914,"villain","The Spark","Archduke Franz Ferdinand assassinated; World War I begins","In Sarajevo, a 19-year-old assassin fired two shots and ended the world that had been. The alliance tripwires ran, mobilization orders went out, and civilization began an act of self-destruction without precedent.","💥"],
+  [1915,"villain","Hell in the Trenches","Gallipoli; Lusitania sunk; poison gas first used","At Gallipoli, ANZAC and British troops were fed into a catastrophic beachhead. Germany sank the Lusitania, killing 1,198 civilians. Chlorine gas was released at Ypres — a new depth of industrial murder.","☠️"],
+  [1916,"villain","The Meatgrinder","Battles of Somme and Verdun claim millions; Einstein publishes General Relativity","On the first day of the Somme, the British army suffered 57,000 casualties. At Verdun, the two greatest armies in the world ground each other to dust. Einstein, somehow, published general relativity.","💀"],
+  [1917,"mixed","Revolution and Intervention","Russian Revolution topples the Tsar; USA enters WWI; Balfour Declaration","Russia's February Revolution toppled the Romanovs; October brought the Bolsheviks to power. America entered the war that would end it. Britain promised a homeland to the Jewish people in land it didn't yet control.","✊"],
+  [1918,"villain","Armistice and Plague","WWI ends with 20 million dead; Spanish Flu kills 50 million more","At the 11th hour of the 11th day of the 11th month, the guns fell silent after 20 million deaths. Then the Spanish Flu swept the weakened world, killing 50 million more — the war that kept killing after it ended.","🎗️"],
+  [1919,"mixed","Peace With Teeth","Treaty of Versailles humiliates Germany; first trans-Atlantic flight","The victors at Versailles demanded reparations so crushing that Keynes predicted — correctly — they would bring catastrophe. Meanwhile, Alcock and Brown flew non-stop across the Atlantic in a converted bomber.","🕊️"],
+  [1920,"mixed","New Freedoms, New Chains","19th Amendment gives women the vote in USA; Prohibition begins","American women won the vote after 72 years of campaigning — a heroic democratic expansion. Simultaneously, Prohibition began its catastrophic experiment in state-enforced virtue, empowering organised crime.","🗳️"],
+  [1921,"mixed","Insulin and Ashes","Insulin discovered, saving millions; Tulsa Race Massacre burns Black Wall Street","Banting and Best extracted insulin, saving millions of diabetics from slow death — a pure act of heroic science. In Tulsa, a white mob burned the prosperous Black Greenwood district to ash in 18 hours.","⚕️"],
+  [1922,"mixed","Pharaohs and Fascists","Tutankhamun's tomb discovered; Mussolini marches on Rome","Howard Carter's torch revealed 3,000-year-old treasures in Tutankhamun's tomb — wonder of wonders. In Rome, Mussolini's Blackshirts marched on the capital and the king handed power to a fascist.","👁️"],
+  [1923,"villain","Inflation and Ambition","Germany's hyperinflation destroys savings; Hitler's Beer Hall Putsch fails","German families burned banknotes for warmth — a wheelbarrow of cash couldn't buy bread. Hitler staged a failed coup in Munich and went to prison, where he dictated Mein Kampf. The seeds of catastrophe watered.","💸"],
+  [1924,"villain","The Succession","Lenin dies; Stalin begins his rise to total power; first Winter Olympics","Lenin died and the revolution devoured its own ideals. Stalin began outmaneuvering rivals for control of a state apparatus he would wield as a weapon of terror. The first Winter Olympics at Chamonix offered a lighter counterpoint.","❄️"],
+  [1925,"mixed","Trial and Fiction","Scopes Monkey Trial; The Great Gatsby published; television first demonstrated","John Scopes was tried for teaching evolution in Tennessee — science versus fundamentalism. Fitzgerald published the American Dream as tragedy. John Logie Baird demonstrated the first working television in a Soho attic.","📺"],
+  [1926,"mixed","Silence and Chrysanthemum","Britain's General Strike; Hirohito becomes Emperor of Japan","Britain's workers launched a general strike that lasted nine days before collapsing, leaving labour weakened. Hirohito became Emperor of Japan, giving his divine name to an era of expansion that would end in atomic fire.","🌸"],
+  [1927,"hero","The Lone Eagle Flies","Lindbergh crosses the Atlantic solo; The Jazz Singer brings sound to cinema","Charles Lindbergh flew 33.5 hours from New York to Paris alone, navigating by stars and will. The Jazz Singer opened its mouth and the silent film era died — a new world of talking pictures began.","🦅"],
+  [1928,"hero","Mould and Mouse","Fleming discovers penicillin; Mickey Mouse debuts; women get equal vote in UK","Alexander Fleming noticed mould killing bacteria and stumbled onto the greatest medical discovery of the century. Mickey Mouse whistled on a steamboat in 'Steamboat Willie', and animation found its voice.","🧫"],
+  [1929,"villain","Black Thursday","Wall Street crashes; the Great Depression begins its long shadow","On Black Thursday, the stock market shed $14 billion in a single day. Banks failed, farms were foreclosed, and breadlines formed across the richest nation on earth. A decade of despair began its slow descent.","📊"],
+  [1930,"mixed","Discovery and Defiance","Pluto discovered; Gandhi's Salt March; first FIFA World Cup","Clyde Tombaugh found a ninth planet in the darkness — tiny, distant Pluto, later demoted. Gandhi walked 240 miles to the sea to make salt, defying empire with a gesture of magnificent simplicity.","🧂"],
+  [1931,"mixed","Ambition Rising","Empire State Building opens; Japan invades Manchuria","The Empire State Building pierced New York's skyline — a monument to ambition built at the Depression's nadir. Japan invaded Manchuria, beginning a decade of Pacific aggression under militarist command.","🏙️"],
+  [1932,"villain","Democracy Wavers","FDR elected amid despair; Nazis become Germany's largest party","Franklin Roosevelt promised a New Deal to a broken America and won in a landslide. In Germany, the Nazis became the Reichstag's largest party through democratic means — democracy electing its own destroyer.","🗳️"],
+  [1933,"villain","The Chancellor of Darkness","Hitler becomes Chancellor; the New Deal tries to fight back","Hitler was appointed Chancellor of Germany and moved with terrifying speed to dismantle democracy. Within months, the Reichstag burned, political parties were banned, and a dictatorship was complete.","🔥"],
+  [1934,"villain","Night of Knives","Night of the Long Knives; Bonnie and Clyde killed; Mao's Long March","Hitler murdered his own SA leadership in the Night of Long Knives, consolidating power through internal terror. Bonnie and Clyde were ambushed and shot 130 times. Mao's forces began the epic Long March retreat.","🗡️"],
+  [1935,"villain","Laws of Hatred","Nuremberg Laws strip Jews of citizenship; Italy invades Ethiopia","Germany codified its racism into law, stripping Jewish citizens of their nationality. Ethiopia's Emperor Haile Selassie appealed to the League of Nations as Italian forces gassed his people — and the world did nothing.","📜"],
+  [1936,"mixed","Gold Against Hate","Jesse Owens humiliates Nazi ideology at Berlin Olympics; Spanish Civil War begins","Jesse Owens won four gold medals under Hitler's furious gaze, making a lie of Aryan supremacy with every stride. Spain descended into civil war — the rehearsal for the larger catastrophe to come.","🏃"],
+  [1937,"villain","Smoke and Screaming","Hindenburg disaster; Nanjing Massacre; Picasso paints Guernica","The Hindenburg exploded on live radio — 36 dead and the age of airships ended in a fireball. Japan's army massacred 300,000 in Nanjing. Picasso painted the screaming horror of Guernica in black and white.","💔"],
+  [1938,"villain","Appeasement","Kristallnacht pogrom; Hitler annexes Austria; Orson Welles's War of the Worlds panics America","On Kristallnacht, Nazi mobs shattered Jewish businesses and synagogues across Germany. Chamberlain returned from Munich with 'peace for our time' — a delusion. Orson Welles's radio drama caused nationwide panic.","🪟"],
+  [1939,"villain","The World Goes Dark","Germany invades Poland; World War II begins; the greatest villain of history moves","On September 1st, German tanks rolled into Poland and the world's greatest war began. Within months, darkness had fallen across Europe. The greatest villain in recorded history was consolidating his grip.","🌑"],
+  [1940,"villain","Britain Stands Alone","Dunkirk evacuation; Battle of Britain; Auschwitz opens","330,000 Allied troops were evacuated from Dunkirk's beaches in a desperate flotilla of little ships. The RAF fought the Luftwaffe over England's fields. Auschwitz opened — the machinery of genocide began.","✈️"],
+  [1941,"villain","Day of Infamy","Pearl Harbor draws America into war; Holocaust accelerates; Operation Barbarossa slaughters millions","Japan's surprise attack on Pearl Harbor brought America into the war. Operation Barbarossa sent 3 million German troops into the Soviet Union. The Einsatzgruppen began mass shootings — the Holocaust accelerating toward its full horror.","💣"],
+  [1942,"mixed","Turning the Tide","Battle of Stalingrad begins; Manhattan Project launched; Battle of Midway turns the Pacific","At Stalingrad, the Red Army stopped the German advance in the bloodiest urban battle in history. The Manhattan Project began in secret. At Midway, US Navy code-breakers and dive-bombers sank Japan's carrier fleet.","⚓"],
+  [1943,"mixed","The Tide Turns","Red Army crushes Germany at Stalingrad; Warsaw Ghetto Uprising shows defiance","The 6th Army surrendered at Stalingrad — Hitler's first great defeat. In Warsaw, Jewish fighters mounted an uprising against impossible odds, choosing to die fighting rather than be taken to the camps.","✡️"],
+  [1944,"hero","The Longest Day","D-Day: Allied forces storm Normandy; liberation of Paris","On June 6th, 156,000 Allied troops stormed five Normandy beaches in the largest seaborne invasion in history. By August, Paris was liberated — crowds lined the Champs-Élysées weeping with joy.","🏖️"],
+  [1945,"mixed","Victory and Ashes","WWII ends; atomic bombs destroy Hiroshima and Nagasaki; United Nations founded","Victory in Europe and the Pacific came with the knowledge of the Holocaust's full horror. The atomic bombs at Hiroshima and Nagasaki ended one war while beginning the nuclear age. The UN was founded in hope.","☮️"],
+  [1946,"mixed","Justice and Iron","Nuremberg trials convict war criminals; Churchill names the Iron Curtain","The Nuremberg trials established that individuals, not just states, could be held responsible for crimes against humanity — a heroic legal innovation. Churchill warned an American audience that an Iron Curtain had descended across Europe.","⚖️"],
+  [1947,"mixed","Freedom and Fracture","India gains independence; Cold War begins; Dead Sea Scrolls discovered","India gained independence from Britain, but partition along religious lines caused one of history's bloodiest migrations. The CIA was founded; the Cold War hardened. The Dead Sea Scrolls emerged from Qumran's caves.","🇮🇳"],
+  [1948,"mixed","Declaration and Blockade","Israel declared; Berlin Blockade; Universal Declaration of Human Rights","Israel declared independence; neighbouring Arab states invaded immediately. The Soviets blockaded West Berlin; the Allies airlifted supplies for 11 months. The UN's Universal Declaration of Human Rights was adopted.","📋"],
+  [1949,"mixed","Two Worlds","NATO formed; Mao declares People's Republic of China; Orwell publishes 1984","NATO locked the West into collective defence. Mao proclaimed the People's Republic from Tiananmen's gate after 22 years of war. Orwell, dying of tuberculosis, published his warning about totalitarianism.","🌍"],
+  [1950,"villain","Forgotten War","Korean War begins; Cold War paranoia grips America","North Korean tanks crossed the 38th parallel and a forgotten war began — three years of brutal combat that ended where it started. In America, McCarthyism turned neighbour against neighbour in a paranoid witch hunt.","🪖"],
+  [1951,"mixed","Testing the Unthinkable","US conducts nuclear tests in Nevada; color TV introduced","Above Nevada's desert, mushroom clouds bloomed as America refined the art of planetary destruction. In living rooms, colour television arrived — the same year nuclear fire could theoretically end all living rooms everywhere.","📡"],
+  [1952,"mixed","New Queen, New Bomb","Elizabeth II crowned; first H-bomb tested by USA","A 25-year-old Elizabeth II was crowned in Westminster Abbey — the first coronation broadcast on television. America tested the hydrogen bomb, a weapon 450 times more powerful than Hiroshima. Two Elizabeths; one age.","👸"],
+  [1953,"hero","Code of Life","Watson and Crick discover DNA's double helix; Korean War ends; Stalin dies; Everest conquered","Watson and Crick decoded the double helix of DNA — the instruction manual for all life on Earth. Stalin died, releasing millions from terror. Hillary and Tenzing stood atop Everest on coronation day.","🧬"],
+  [1954,"hero","Justice Begins","Brown v. Board of Education ends school segregation in USA","The Supreme Court ruled unanimously that racial segregation in public schools was unconstitutional — the legal cornerstone of the civil rights movement. Thurgood Marshall had argued the case with quiet, devastating precision.","📚"],
+  [1955,"hero","The Seamstress Sits","Rosa Parks refuses to give up her seat; Disneyland opens; Warsaw Pact formed","Rosa Parks sat down so America might stand up — her refusal to move to the back of a Montgomery bus launched a boycott that changed a nation. Disneyland opened on the same continent, a very different kind of dream.","🚌"],
+  [1956,"mixed","Suez and Silence","Suez Crisis humiliates Britain and France; Hungarian Revolution crushed; Elvis Presley ignites rock 'n' roll","Britain and France invaded Egypt to seize the Suez Canal and were forced to retreat by American pressure — empire's twilight in one humiliation. Hungary rose against Soviet rule and was crushed by tanks. Elvis put his hips on TV.","🎸"],
+  [1957,"hero","Beep from Space","Sputnik launches the Space Age; Civil Rights Act signed; European Common Market formed","Sputnik's lonely beep from orbit shocked Americans into the space race — one basketball-sized satellite changed history. The first Civil Rights Act since Reconstruction passed Congress. Six nations signed the Treaty of Rome.","🛸"],
+  [1958,"mixed","Giant Leaps","NASA founded; Mao's Great Leap Forward kills tens of millions","NASA was created to answer Sputnik's challenge — a heroic institutional birth. Simultaneously, Mao launched the Great Leap Forward, a collectivisation catastrophe that killed 15 to 55 million Chinese through famine.","🚀"],
+  [1959,"mixed","Revolution and Exploration","Castro takes Cuba; Antarctic Treaty; Barbie debuts","Fidel Castro's guerrillas marched into Havana, 90 miles from Florida, and the Cold War shifted. The Antarctic Treaty declared the continent a zone of peace and science. Barbie emerged from a Mattel meeting.","🌊"],
+  [1960,"hero","A Continent Awakes","Oral contraceptive approved; OPEC founded; 17 African nations gain independence","The birth control pill arrived, giving women unprecedented control over their bodies. OPEC formed as producing nations reclaimed resource sovereignty. Seventeen African nations gained independence in a single year.","🌍"],
+  [1961,"mixed","Stars and Walls","Yuri Gagarin becomes first human in space; Berlin Wall built; Bay of Pigs fails","Gagarin looked down at the blue marble below and said it was beautiful — the greatest journey in human history to that point. The Berlin Wall divided a city and a world. The Bay of Pigs humiliated the CIA.","🌌"],
+  [1962,"villain","Thirteen Days","Cuban Missile Crisis brings the world to the nuclear brink","For thirteen days in October, nuclear war between the superpowers was a miscalculation away. Kennedy and Khrushchev stared into the abyss and both blinked — the most dangerous fortnight in human history.","☢️"],
+  [1963,"villain","The Day America Wept","JFK assassinated; MLK delivers 'I Have a Dream'; Beatlemania begins","John Kennedy was shot in Dallas and the light seemed to go out of a generation's idealism. Months earlier, King had stood before the Lincoln Memorial and dreamed of justice. The Beatles were already changing everything.","💔"],
+  [1964,"mixed","Rights and Wrongs","Civil Rights Act signed; Gulf of Tonkin escalates Vietnam War; Mandela imprisoned for life","LBJ signed the Civil Rights Act, outlawing discrimination — a heroic legislative achievement. Fraudulent incidents in the Gulf of Tonkin were used to escalate Vietnam. Mandela was sentenced to life on Robben Island.","⚖️"],
+  [1965,"mixed","March and Mud","Selma marches; Vietnam War escalates; first spacewalk by Leonov","John Lewis led marchers across Selma's Edmund Pettus Bridge into police clubs and tear gas — the images shocked the nation into passing the Voting Rights Act. Leonov floated in space for 12 minutes. Vietnam deepened.","🌉"],
+  [1966,"mixed","Revolution and Stars","Cultural Revolution terrorizes China; Star Trek premieres; NOW founded","Mao launched the Cultural Revolution, unleashing teenage Red Guards to destroy China's intellectual class — millions persecuted. Star Trek imagined a future of equality. Betty Friedan co-founded NOW.","⭐"],
+  [1967,"mixed","Love and Surgery","Summer of Love; Six-Day War; first heart transplant by Barnard","100,000 young people gathered in San Francisco's Haight-Ashbury with flowers and LSD, dreaming peace. Israel's Six-Day War redrew the Middle East in six days. Barnard transplanted the first human heart in Cape Town.","❤️"],
+  [1968,"villain","Year of Shocks","MLK and RFK assassinated; Prague Spring crushed; Apollo 8 offers a pale blue dot view","Martin Luther King was shot on a Memphis balcony. Robert Kennedy was shot in a Los Angeles hotel kitchen. Prague's democratic spring was crushed by Soviet tanks. Apollo 8 sent back an Earthrise photo.","😔"],
+  [1969,"hero","One Small Step","Neil Armstrong walks on the Moon; Woodstock; Stonewall Riots launch LGBTQ+ rights","Armstrong stepped onto the lunar surface — the greatest technological achievement in human history. Half a million gathered at Woodstock in rain and music. At the Stonewall Inn, LGBTQ+ people fought back against a police raid.","🌙"],
+  [1970,"mixed","Mourning and Earth","Kent State shootings; first Earth Day; Beatles break up","National Guard troops shot four students protesting the Vietnam War at Kent State — America killing its own children. The first Earth Day gathered 20 million Americans in the largest civic demonstration in US history.","🌱"],
+  [1971,"mixed","Pentagon and Chips","Pentagon Papers expose Vietnam lies; Bangladesh War of Independence; first microprocessor","Daniel Ellsberg leaked the Pentagon Papers, proving the government had systematically lied about Vietnam. Intel's 4004 placed a computer on a chip — the seed of every digital device that followed.","💻"],
+  [1972,"villain","Watergate and Munich","Watergate scandal begins; Munich Olympics massacre; Bloody Sunday in Ireland","Nixon's men broke into the Watergate complex, beginning the unraveling of a presidency. Palestinian gunmen killed 11 Israeli athletes at the Munich Olympics. British paratroopers shot 26 civil rights marchers in Derry.","🎭"],
+  [1973,"mixed","Oil and Choice","OPEC oil crisis; Paris Peace Accords; Roe v. Wade; Chile coup","Arab oil producers cut production, causing the first energy crisis and ending the age of cheap petrol. Roe v. Wade established abortion rights in the US. Pinochet's coup, backed by the CIA, killed Chile's democracy.","⛽"],
+  [1974,"mixed","Fall of a President","Nixon resigns; Rubik's Cube invented; India tests nuclear weapon","Richard Nixon became the first US president to resign, destroyed by his own dishonesty. Ernő Rubik invented his cube and inflicted joyful frustration on billions. India joined the nuclear club.","🎲"],
+  [1975,"mixed","The Last Helicopter","Saigon falls, Vietnam War ends; Microsoft founded; Khmer Rouge genocide begins","The last helicopter lifted from the US Embassy rooftop in Saigon — America's longest war ended in defeat. Bill Gates and Paul Allen founded Microsoft in a garage. The Khmer Rouge began emptying Cambodian cities.","🚁"],
+  [1976,"mixed","Dragon and Apple","Mao Zedong dies; Soweto uprising; Apple Computer founded; Concorde service begins","Mao died after three decades of rule that killed tens of millions. South African children marched in Soweto against apartheid and were shot. Wozniak and Jobs incorporated Apple Computer. Concorde began supersonic service.","🍎"],
+  [1977,"hero","Stars and Sequins","Star Wars released; Elvis dies; first personal computers reach homes","George Lucas released Star Wars and culture was never the same — the blockbuster era began. Elvis Presley died in Memphis at 42, the king of rock reduced to a ghost of himself. The Apple II brought computing home.","🌟"],
+  [1978,"mixed","Life and Death","First test-tube baby born; Camp David Accords; Jonestown massacre","Louise Brown arrived in the world — the first human conceived outside a body, a miracle of biology. Begin and Sadat signed the Camp David Accords, briefly making peace between Egypt and Israel. At Jonestown, 918 died.","🍼"],
+  [1979,"villain","Revolution and Reactor","Iranian Revolution; Soviet invasion of Afghanistan; Three Mile Island meltdown","The Shah fell and Ayatollah Khomeini returned to Tehran — Islamic revolution reshaping the Middle East. The Soviets invaded Afghanistan, beginning a 10-year quagmire. Three Mile Island nearly became America's Chernobyl.","☢️"],
+  [1980,"villain","Lennon and War","John Lennon shot dead; Iran-Iraq War begins; Mount St. Helens erupts; CNN founded","John Lennon was shot outside his New York apartment building — the world lost its most eloquent dreamer. Iran and Iraq began a war that would kill a million people. CNN launched, inventing 24-hour news.","🎵"],
+  [1981,"mixed","Plague and Progress","AIDS epidemic identified; Reagan shot; IBM PC launches; first Space Shuttle flight","Doctors noticed a mysterious immune-system disease striking gay men in New York and California — AIDS had arrived. Reagan survived an assassination attempt. The IBM PC and first Space Shuttle flight opened new frontiers.","💻"],
+  [1982,"mixed","Islands and Islands","Falklands War; Lebanon War; CD player introduced; EPCOT opens","Argentina seized the Falkland Islands and Britain sent a task force to the South Atlantic to take them back. Israel invaded Lebanon. The CD player launched, beginning the end of vinyl's reign.","💿"],
+  [1983,"mixed","Internet Born, War Nearly Started","ARPANET goes public; Able Archer nuclear war scare; Star Wars Episode VI","ARPANET expanded into the public internet — the birth of the network that would reshape civilization. NATO's Able Archer exercise convinced Soviet intelligence that a nuclear first strike was imminent. Return of the Jedi.","🌐"],
+  [1984,"mixed","Apple and Bhopal","Apple Macintosh launches; Bhopal chemical disaster kills thousands; Miners' Strike in UK","Apple's '1984' Super Bowl ad introduced the Macintosh — a computer with a face. In Bhopal, a Union Carbide gas leak killed 20,000 people, the worst industrial disaster in history.","💻"],
+  [1985,"hero","We Are the World","Live Aid concerts unite the globe; Gorbachev begins reforms; HIV identified","Bob Geldof organised Live Aid — 1.9 billion viewers watching simultaneously — raising funds for Ethiopian famine. Gorbachev became Soviet leader and began tentatively opening the system. The HIV virus was finally isolated.","🎤"],
+  [1986,"villain","Fire and Ice","Chernobyl nuclear disaster; Space Shuttle Challenger explodes on live TV","Reactor 4 at Chernobyl exploded, scattering radioactive debris across Europe and exposing Soviet lies about nuclear safety. Seventy-three seconds after launch, Challenger broke apart before a watching world. Two catastrophes, one year.","💥"],
+  [1987,"mixed","Crash and Medicine","Black Monday stock market crash; Intifada begins; Prozac approved","Markets crashed 22% in a single day — worse than 1929 — yet the economy somehow recovered. The Palestinian Intifada began, reshaping Middle Eastern politics. Prozac was approved, beginning the antidepressant age.","📉"],
+  [1988,"villain","Lockerbie","Pan Am 103 bombed over Lockerbie; Iran-Iraq War ends with a million dead","Pan Am Flight 103 exploded over Lockerbie, Scotland, killing 270 people — Libyan state terrorism at 31,000 feet. The Iran-Iraq War finally ended after eight years and a million dead, with nothing changed.","✈️"],
+  [1989,"mixed","The Wall Falls","Berlin Wall falls; Tiananmen Square massacre; Exxon Valdez oil spill","East Germans climbed atop the Berlin Wall and danced — the Cold War's most astonishing moment of joy. In Beijing, tanks rolled over student protesters in Tiananmen Square. The Exxon Valdez blackened Alaskan seas.","🧱"],
+  [1990,"mixed","Free at Last","German reunification; Gulf War begins; Nelson Mandela freed after 27 years; Hubble launched","Nelson Mandela walked free after 27 years on Robben Island — the most electrifying political release in memory. Germany reunified. The Gulf War began as Saddam Hussein's Iraq invaded Kuwait. Hubble reached orbit.","🔭"],
+  [1991,"hero","The Empire Dissolves","USSR dissolves peacefully; Gulf War liberation; World Wide Web goes public","The Soviet Union — 74 years of ideology, gulag, and nuclear terror — dissolved without a nuclear shot fired. Kuwait was liberated. Tim Berners-Lee published the World Wide Web protocols that would remake civilization.","🌐"],
+  [1992,"mixed","City on Fire","LA Riots; Maastricht Treaty; Yugoslavia's wars; Bill Clinton elected","Los Angeles erupted after the acquittal of officers who beat Rodney King on camera — 63 dead, $1 billion in damage. The Maastricht Treaty created the European Union. Yugoslavia was tearing itself apart.","🔥"],
+  [1993,"mixed","Handshakes and Bombs","Oslo Accords; World Trade Center first bombed; first graphical web browser","Rabin and Arafat shook hands on the White House lawn — peace between Israel and the PLO seemed possible. The World Trade Center was bombed from below. Mosaic, the first graphical browser, brought the web to everyone.","🤝"],
+  [1994,"mixed","Triumph and Slaughter","Rwanda genocide kills 800,000; Nelson Mandela elected; Amazon founded; Northridge quake","In 100 days, 800,000 Tutsi were murdered in Rwanda while the world watched and did nothing — the most efficient genocide in history. Nelson Mandela became South Africa's first Black president. Amazon was incorporated.","🌍"],
+  [1995,"mixed","Oklahoma and Windows","Oklahoma City bombing; Windows 95 launches the internet age; Rabin assassinated","Timothy McVeigh's truck bomb killed 168 people in Oklahoma City — the face of domestic terrorism. Windows 95 launched with a marketing blitz, putting the internet into the mainstream. Yitzhak Rabin was assassinated at a peace rally.","💻"],
+  [1996,"mixed","Clone and Crisis","Dolly the sheep cloned; Mad Cow disease panic; eBay launched; first Harry Potter written","Dolly the sheep was the first mammal cloned from an adult cell, raising profound questions about identity. Mad Cow disease terrified Britain's beef-eaters. J.K. Rowling finished Harry Potter in an Edinburgh café.","🐑"],
+  [1997,"villain","A Princess and a Province","Princess Diana dies; Hong Kong returned to China; Kyoto Protocol signed","Diana's death in a Paris tunnel caused an outpouring of global grief unprecedented in the media age. Hong Kong returned to China after 156 years, watched nervously by its 6 million residents. Kyoto aimed at the climate.","🌹"],
+  [1998,"mixed","Scandal and Search","Clinton impeachment; Google founded; Good Friday Agreement; financial crises","Clinton was impeached over a sexual liaison — the first president impeached in 130 years. Larry Page and Sergey Brin incorporated Google in a California garage. The Good Friday Agreement ended 30 years of Irish Troubles.","🔍"],
+  [1999,"mixed","Fear and Millennium","Y2K fears; Columbine shooting; Euro introduced; NATO bombs Yugoslavia","The world held its breath for a computer bug that barely materialized. At Columbine High School, two teenagers killed 13 — the nightmare of school shootings began. The Euro was introduced across 11 European nations.","💶"],
+  [2000,"mixed","Non-Event and Bubble","Y2K passes quietly; dot-com bubble bursts; Putin rises; ISS first crew arrives","The millennium turned peacefully — the feared computer apocalypse a damp squib. The dot-com bubble burst, erasing $5 trillion in value. Putin became Russian president. The ISS received its first permanent crew.","🌐"],
+  [2001,"villain","The World Changed","September 11 attacks kill 2,977; Afghanistan War begins; Wikipedia and iPod born","Nineteen hijackers turned four airliners into missiles and killed 2,977 people, changing the world irrevocably. Afghanistan was invaded. Wikipedia launched — the greatest collaborative knowledge project in history.","✈️"],
+  [2002,"mixed","Currency and Terror","Euro coins introduced; Bali bombings; first drone strikes","Euro coins and notes entered wallets across 12 nations — a mundane miracle of European cooperation. Bali's nightclub was bombed by Islamic extremists, killing 202. The first armed drone strikes reshaped warfare.","💰"],
+  [2003,"villain","Shock and Awe","Iraq War begins on false pretenses; SARS epidemic; Columbia shuttle disaster","The US invaded Iraq citing weapons of mass destruction that didn't exist — a catastrophic failure of intelligence and honesty. SARS spread globally. Columbia disintegrated on re-entry, killing seven astronauts.","💥"],
+  [2004,"mixed","Wave and Network","Indian Ocean tsunami kills 230,000; Facebook launched; Madrid bombings","The Boxing Day tsunami killed 230,000 around the Indian Ocean in 15 minutes — the deadliest natural disaster in modern history. Mark Zuckerberg launched Facebook from a Harvard dorm room. Madrid's trains were bombed.","🌊"],
+  [2005,"villain","Wind and Water","Hurricane Katrina exposes inequality; London bombings; YouTube founded","Hurricane Katrina flooded New Orleans and exposed how race and poverty determined who lived and who died. London's transport network was bombed by British-born jihadists. Three young men founded YouTube.","🌀"],
+  [2006,"hero","Tweet and Demotion","Twitter founded; Pluto demoted; North Korea tests nuclear weapon","Jack Dorsey sent the first tweet — 'just setting up my twttr' — from a San Francisco park. Astronomers demoted Pluto to dwarf planet. North Korea tested a nuclear weapon, joining the most dangerous club on Earth.","🐦"],
+  [2007,"hero","The Device That Changed Everything","Steve Jobs unveils the iPhone; Virginia Tech shooting; subprime crisis begins","Steve Jobs walked on stage and announced a phone, an iPod, and an internet communicator — then revealed all three were one device. The iPhone was the hinge point between old and new digital worlds.","📱"],
+  [2008,"villain","The Crash","Global Financial Crisis; Lehman Brothers collapses; Obama elected; Beijing Olympics","Lehman Brothers collapsed and the financial system came within days of total seizure — the worst crisis since 1929. Barack Obama was elected the first Black US president. Beijing staged the greatest Olympics spectacle ever.","📉"],
+  [2009,"hero","Miracle and Code","Miracle on the Hudson; H1N1 pandemic; Bitcoin invented by Satoshi Nakamoto","Chesley Sullenberger landed US Airways 1549 on the Hudson River with no casualties — the perfect heroism of skill and calm. An anonymous coder named Satoshi Nakamoto launched Bitcoin, inventing decentralised money.","₿"],
+  [2010,"mixed","Earth Trembles","Haiti earthquake kills 230,000; BP Deepwater Horizon spill; Arab Spring begins; Chile mine rescue","Haiti's earthquake killed 230,000 of the Western Hemisphere's poorest people. BP's oil well ruptured in the Gulf of Mexico. 33 Chilean miners were rescued from underground after 69 days — global television joy.","⛏️"],
+  [2011,"mixed","Spring and Fallout","Arab Spring topples dictators; bin Laden killed; Fukushima nuclear disaster; Occupy Wall Street","Facebook-organised revolts toppled Mubarak and Ben Ali. Navy SEAL Team 6 killed Osama bin Laden in Abbottabad. An earthquake and tsunami triggered the Fukushima nuclear disaster. Occupy Wall Street began.","🌱"],
+  [2012,"hero","God Particle Found","Higgs Boson discovered; Curiosity lands on Mars; Sandy Hook; Hurricane Sandy","CERN announced the Higgs Boson — the last missing piece of the Standard Model of physics. Curiosity landed on Mars with a sky-crane manoeuvre of breathtaking audacity. Sandy Hook's horror shocked the world.","⚛️"],
+  [2013,"mixed","Secrets Revealed","Edward Snowden reveals mass surveillance; Boston Marathon bombing; Pope Francis elected","Edward Snowden revealed that the NSA was recording virtually all digital communication — surveillance on an Orwellian scale. The Boston Marathon finish line became a crime scene. Francis became the first Jesuit Pope.","📡"],
+  [2014,"villain","The Caliphate","ISIS declares caliphate; Russia annexes Crimea; Ebola outbreak; MH370 disappears","ISIS declared a caliphate across Iraq and Syria, executing its brutality on camera for maximum horror. Putin annexed Crimea — the first forcible annexation in Europe since WWII. MH370 vanished with 239 aboard.","🗡️"],
+  [2015,"mixed","Attacks and Accords","Paris attacks kill 130; Syrian refugee crisis; Paris Climate Agreement; same-sex marriage in US","Gunmen and bombers killed 130 in Paris on a November Friday evening. A million Syrian refugees crossed into Europe. 195 nations signed the Paris Climate Agreement. The Supreme Court legalised same-sex marriage in the US.","🕊️"],
+  [2016,"mixed","The Great Disruption","Brexit shocks Europe; Trump elected; Zika virus; Orlando nightclub massacre","The UK voted to leave the EU in an upset that divided generations. Donald Trump won the US presidential election. A gunman killed 49 at an Orlando nightclub. Zika virus caused global alarm about birth defects.","🌍"],
+  [2017,"mixed","Reckoning","#MeToo movement begins; Hurricane Harvey and Irma; Las Vegas shooting; Rohingya genocide","#MeToo spread from Hollywood across every industry, rewriting the rules of power and gender. Harvey and Irma devastated Texas and the Caribbean. The Las Vegas shooting killed 60. Myanmar expelled its Rohingya Muslims.","✊"],
+  [2018,"villain","Data and Death","Cambridge Analytica scandal; Parkland shooting; Khashoggi murdered; Notre Dame nearly lost","Cambridge Analytica revealed how personal data had been weaponized to manipulate elections. A shooter killed 17 at Parkland High School. Jamal Khashoggi was murdered in a Saudi consulate.","💻"],
+  [2019,"mixed","Flames and Futures","Notre Dame fire; Hong Kong protests; first black hole image captured; Amazon burns","Notre Dame Cathedral burned on a Monday evening — the spire fell and France wept. Scientists published the first photograph of a black hole. Hong Kong's streets filled with protesters carrying umbrellas. The Amazon burned.","🔥"],
+  [2020,"villain","The Plague Year","COVID-19 kills millions worldwide; George Floyd murdered; BLM movement; US election chaos","COVID-19 killed 1.8 million people in 2020 alone, shutting the world's economies and filling its morgues. George Floyd's murder was recorded on video and ignited a global reckoning with racism.","😷"],
+  [2021,"mixed","Needles and Riots","COVID vaccines save millions; Capitol riot on January 6; US flees Afghanistan; Squid Game","mRNA vaccines reached arms with astonishing speed, saving millions. A mob invaded the US Capitol to overturn an election — democracy's most frightening day in a generation. US forces fled Afghanistan after 20 years.","💉"],
+  [2022,"mixed","War Returns to Europe","Russia invades Ukraine; James Webb Space Telescope reveals cosmos; Queen Elizabeth II dies","Putin's Russia invaded Ukraine in the largest land war in Europe since WWII. The James Webb Space Telescope sent back images of the universe's first light. Elizabeth II died at 96 after 70 years of reign.","🚀"],
+  [2023,"hero","The Mind Awakens","ChatGPT launches the AI revolution; Wagner Group mutiny; Maui wildfires; Gaza war begins","ChatGPT reached 100 million users faster than any technology in history, inaugurating the age of artificial general intelligence. Humanity found itself talking to machines that talked back. Everything changed, again.","🤖"],
+  [2024,"villain","The Year the World Voted","Gaza-Israel war escalates; global election supercycle; AI reshapes everything","More people voted in elections in 2024 than in any year in human history — and in many places, they voted for disruption. The Gaza conflict caused catastrophic civilian casualties. AI reshaped work, creativity, and power.","🗳️"],
+  [2025,"mixed","The Acceleration","AI becomes central to daily life; geopolitical tensions deepen; climate records shattered","Artificial intelligence ceased to be futuristic and became mundane — writing, coding, diagnosing, deciding. Climate records fell month after month. The world felt simultaneously more capable and more fragile than ever.","⚡"],
+  [2026,"hero","The Present Moment","We arrive here, at the edge of the known, where the chronicle rests","We arrive at the edge of the chronicle — the future unwritten, the past impossibly vast. Every year behind us was someone's present moment, faced with the same uncertainty we feel now. The story continues.","✨"],
+];
+
+// ═══════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════
+function getEra(year) {
+  for (const era of ERAS) if (year >= era.start && year <= era.end) return era;
+  return ERAS[ERAS.length - 1];
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return [r,g,b];
+}
+function lerpColor(c1, c2, t) {
+  return c1.map((v,i) => Math.round(v + (c2[i]-v)*t));
+}
+function rgbToHex([r,g,b]) {
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+function interpolateEraColors(year) {
+  const eraIdx = ERAS.findIndex(e => year >= e.start && year <= e.end);
+  if (eraIdx < 0) return ERAS[0];
+  const era = ERAS[eraIdx];
+  const next = ERAS[eraIdx+1] || era;
+  const span = era.end - era.start;
+  const t = span > 0 ? (year - era.start) / span : 0;
+  const smooth = t > 0.7 ? (t - 0.7) / 0.3 : 0;
+  return {
+    bg:     rgbToHex(lerpColor(hexToRgb(era.bg),     hexToRgb(next.bg),     smooth)),
+    accent: rgbToHex(lerpColor(hexToRgb(era.accent), hexToRgb(next.accent), smooth)),
+    text:   rgbToHex(lerpColor(hexToRgb(era.text),   hexToRgb(next.text),   smooth)),
+    name: era.name,
+  };
+}
+
+// Card gradient per era
+function eraGradient(eraName) {
+  const map = {
+    "Victorian":          "linear-gradient(135deg,#3a1800,#1a0a00)",
+    "Edwardian":          "linear-gradient(135deg,#1a2e4a,#0d1a2e)",
+    "Great War":          "linear-gradient(135deg,#3a0505,#1a0505)",
+    "Roaring 20s":        "linear-gradient(135deg,#3a2800,#1a1400)",
+    "Depression":         "linear-gradient(135deg,#282828,#101010)",
+    "WWII":               "linear-gradient(135deg,#0a2a0a,#0a1a0a)",
+    "Cold War":           "linear-gradient(135deg,#0a2040,#0a1428)",
+    "Space Age":          "linear-gradient(135deg,#10103a,#05051e)",
+    "Turbulent 70s":      "linear-gradient(135deg,#3a1c00,#1e1000)",
+    "Neon 80s":           "linear-gradient(135deg,#200040,#0e001e)",
+    "Digital Revolution": "linear-gradient(135deg,#003a3a,#001e1e)",
+    "New Millennium":     "linear-gradient(135deg,#0a1840,#0a1020)",
+    "Social Age":         "linear-gradient(135deg,#1a2030,#121418)",
+    "Crisis Era":         "linear-gradient(135deg,#0d1520,#0d1117)",
+  };
+  return map[eraName] || "linear-gradient(135deg,#222,#111)";
+}
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let currentIndex = 0;
+let autoplayTimer = null;
+let isPlaying = false;
+let soundEnabled = false;
+let audioCtx = null;
+let capsuleTargetYear = null;
+
+// ═══════════════════════════════════════════════════════
+// BUILD CARDS
+// ═══════════════════════════════════════════════════════
+const timeline = document.getElementById('timeline');
+const pads = timeline.querySelectorAll('.timeline-pad');
+const cardEls = [];
+
+EVENTS.forEach(([year, type, title, subtitle, narrative, symbol], idx) => {
+  const era = getEra(year);
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.index = idx;
+  card.dataset.year = year;
+
+  const typeBadge = `badge-${type}`;
+  const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+
+  card.innerHTML = `
+    <div class="card-image">
+      <div class="card-gradient" style="background:${eraGradient(era.name)}"></div>
+      <div class="card-image-overlay">${symbol}</div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-year">${year}</div>
+        <div class="card-badges">
+          <span class="badge badge-era">${era.name}</span>
+          <span class="badge ${typeBadge}">${typeLabel}</span>
+        </div>
+      </div>
+      <div class="card-title">${title}</div>
+      <div class="card-subtitle">${subtitle}</div>
+      <div class="card-narrative">${narrative}</div>
+    </div>
+    <div class="card-notes" id="notes-${year}"></div>
+    <div class="card-footer">
+      <span class="card-nav-hint">← →</span>
+      <button class="time-capsule-btn" data-year="${year}">✉ Leave a Note</button>
+    </div>
+    <div class="card-symbol">${symbol}</div>
+  `;
+
+  timeline.insertBefore(card, pads[1]);
+  cardEls.push(card);
+  renderNotes(year, card.querySelector(`#notes-${year}`));
+});
+
+// ═══════════════════════════════════════════════════════
+// TIME CAPSULE
+// ═══════════════════════════════════════════════════════
+function getNotes(year) {
+  try { return JSON.parse(localStorage.getItem(`annum-note-${year}`) || '[]'); } catch { return []; }
+}
+function saveNote(year, text) {
+  const notes = getNotes(year);
+  notes.push({ text, ts: Date.now() });
+  localStorage.setItem(`annum-note-${year}`, JSON.stringify(notes));
+}
+function renderNotes(year, container) {
+  if (!container) return;
+  const notes = getNotes(year);
+  container.innerHTML = '';
+  notes.forEach(n => {
+    const d = document.createElement('div');
+    d.className = 'card-note-item';
+    d.innerHTML = `<div>${n.text}</div><div class="card-note-time">${new Date(n.ts).toLocaleDateString()}</div>`;
+    container.appendChild(d);
+  });
+}
+
+document.getElementById('timeline').addEventListener('click', e => {
+  const btn = e.target.closest('.time-capsule-btn');
+  if (!btn) return;
+  capsuleTargetYear = parseInt(btn.dataset.year);
+  document.getElementById('capsule-year-label').textContent = capsuleTargetYear;
+  document.getElementById('capsule-textarea').value = '';
+  const existing = document.getElementById('capsule-existing');
+  existing.innerHTML = '';
+  getNotes(capsuleTargetYear).forEach(n => {
+    const d = document.createElement('div');
+    d.className = 'card-note-item';
+    d.innerHTML = `<div>${n.text}</div><div class="card-note-time">${new Date(n.ts).toLocaleDateString()}</div>`;
+    existing.appendChild(d);
+  });
+  document.getElementById('capsule-modal').classList.add('open');
+});
+
+document.getElementById('capsule-save').addEventListener('click', () => {
+  const text = document.getElementById('capsule-textarea').value.trim();
+  if (!text || !capsuleTargetYear) return;
+  saveNote(capsuleTargetYear, text);
+  const card = cardEls.find(c => parseInt(c.dataset.year) === capsuleTargetYear);
+  if (card) renderNotes(capsuleTargetYear, card.querySelector(`#notes-${capsuleTargetYear}`));
+  document.getElementById('capsule-modal').classList.remove('open');
+});
+document.getElementById('capsule-cancel').addEventListener('click', () => {
+  document.getElementById('capsule-modal').classList.remove('open');
+});
+
+// ═══════════════════════════════════════════════════════
+// MINI-MAP + PROGRESS
+// ═══════════════════════════════════════════════════════
+const miniMap = document.getElementById('mini-map');
+EVENTS.forEach(([year, type], idx) => {
+  const era = getEra(year);
+  const dot = document.createElement('div');
+  dot.className = 'mini-year';
+  dot.dataset.index = idx;
+  dot.title = year;
+  dot.style.background = era.accent + '55';
+  dot.addEventListener('click', () => scrollToIndex(idx));
+  miniMap.appendChild(dot);
+});
+
+function updateMiniMap(idx) {
+  miniMap.querySelectorAll('.mini-year').forEach((d,i) => {
+    d.classList.toggle('active', i === idx);
+    if (i === idx) d.style.background = getEra(EVENTS[idx][0]).accent;
+  });
+  const pct = EVENTS.length > 1 ? (idx / (EVENTS.length - 1)) * 100 : 0;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+document.getElementById('progress-bar-wrap').addEventListener('click', e => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const t = (e.clientX - rect.left) / rect.width;
+  scrollToIndex(Math.round(t * (EVENTS.length - 1)));
+});
+
+// ═══════════════════════════════════════════════════════
+// YEAR GRID
+// ═══════════════════════════════════════════════════════
+const yearGrid = document.getElementById('year-grid');
+EVENTS.forEach(([year, type, title], idx) => {
+  const era = getEra(year);
+  const cell = document.createElement('div');
+  cell.className = 'year-cell';
+  cell.dataset.index = idx;
+  cell.dataset.year = year;
+  cell.dataset.search = `${year} ${title}`.toLowerCase();
+  cell.style.background = era.bg;
+  cell.style.color = era.text;
+  cell.style.borderColor = era.accent + '44';
+  const dotColor = type === 'hero' ? '#4caf50' : type === 'villain' ? '#f44336' : '#ff9800';
+  cell.innerHTML = `<div class="year-cell-num">${year}</div><div class="year-cell-dot" style="background:${dotColor}"></div>`;
+  cell.addEventListener('click', () => {
+    scrollToIndex(idx);
+    closeYearModal();
+  });
+  yearGrid.appendChild(cell);
+});
+
+function updateYearGridActive(idx) {
+  yearGrid.querySelectorAll('.year-cell').forEach((c,i) => c.classList.toggle('active-cell', i===idx));
+}
+
+document.getElementById('year-search').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase().trim();
+  yearGrid.querySelectorAll('.year-cell').forEach(c => {
+    c.classList.toggle('hidden', q && !c.dataset.search.includes(q));
+  });
+});
+
+document.getElementById('year-selector-btn').addEventListener('click', () => {
+  document.getElementById('year-modal').classList.add('open');
+  updateYearGridActive(currentIndex);
+});
+function closeYearModal() { document.getElementById('year-modal').classList.remove('open'); }
+document.getElementById('year-modal-close').addEventListener('click', closeYearModal);
+
+// ═══════════════════════════════════════════════════════
+// FATE METER
+// ═══════════════════════════════════════════════════════
+function updateFateMeter() {
+  const heroes = EVENTS.filter(e=>e[1]==='hero').length;
+  const villains = EVENTS.filter(e=>e[1]==='villain').length;
+  const total = heroes + villains;
+  const pct = total > 0 ? (heroes/total*100).toFixed(0) : 50;
+  document.getElementById('fate-hero-bar').style.width = pct + '%';
+  document.getElementById('fate-text').textContent = `${heroes}H / ${villains}V`;
+}
+updateFateMeter();
+
+// ═══════════════════════════════════════════════════════
+// SCROLL & INTERSECTION
+// ═══════════════════════════════════════════════════════
+let scrollDebounce = null;
+
+function scrollToIndex(idx, behavior='smooth') {
+  if (idx < 0) idx = 0;
+  if (idx >= EVENTS.length) idx = EVENTS.length - 1;
+  const card = cardEls[idx];
+  if (!card) return;
+  card.scrollIntoView({ behavior, block: 'nearest', inline: 'center' });
+}
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.intersectionRatio >= 0.5) {
+      const idx = parseInt(entry.target.dataset.index);
+      if (idx !== currentIndex) {
+        currentIndex = idx;
+        onIndexChange(idx);
+      }
+    }
+  });
+}, { root: timeline, threshold: 0.5 });
+
+cardEls.forEach(c => observer.observe(c));
+
+function onIndexChange(idx) {
+  const [year, type] = EVENTS[idx];
+  document.getElementById('current-year-display').textContent = year;
+  cardEls.forEach((c,i) => c.classList.toggle('active', i===idx));
+  updateMiniMap(idx);
+  updateEraColors(year);
+  if (soundEnabled) playEraSound(year);
+}
+
+function updateEraColors(year) {
+  const colors = interpolateEraColors(year);
+  document.documentElement.style.setProperty('--bg', colors.bg);
+  document.documentElement.style.setProperty('--accent', colors.accent);
+  document.documentElement.style.setProperty('--text', colors.text);
+  document.getElementById('progress-bar').style.background = colors.accent;
+}
+
+// Wheel → horizontal scroll
+timeline.addEventListener('wheel', e => {
+  if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+    e.preventDefault();
+    timeline.scrollBy({ left: e.deltaY * 2.5 });
+    clearTimeout(scrollDebounce);
+    scrollDebounce = setTimeout(() => snapToNearest(), 150);
+  }
+}, { passive: false });
+
+function snapToNearest() {
+  const tl = timeline;
+  const center = tl.scrollLeft + tl.clientWidth / 2;
+  let best = 0, bestDist = Infinity;
+  cardEls.forEach((c, i) => {
+    const cc = c.offsetLeft + c.offsetWidth / 2;
+    const d = Math.abs(cc - center);
+    if (d < bestDist) { bestDist = d; best = i; }
+  });
+  scrollToIndex(best);
+}
+
+// Touch
+let touchStartX = 0, touchStartTime = 0, touchStartScroll = 0;
+timeline.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartTime = Date.now();
+  touchStartScroll = timeline.scrollLeft;
+}, { passive: true });
+timeline.addEventListener('touchmove', e => {
+  const dx = touchStartX - e.touches[0].clientX;
+  timeline.scrollLeft = touchStartScroll + dx;
+}, { passive: true });
+timeline.addEventListener('touchend', e => {
+  const dx = touchStartX - e.changedTouches[0].clientX;
+  const dt = Date.now() - touchStartTime;
+  const vel = dx / dt;
+  if (Math.abs(vel) > 0.3) {
+    timeline.scrollBy({ left: vel * 300, behavior: 'smooth' });
+  }
+  setTimeout(() => snapToNearest(), 300);
+});
+
+// ═══════════════════════════════════════════════════════
+// KEYBOARD
+// ═══════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (document.getElementById('year-modal').classList.contains('open')) {
+    if (e.key === 'Escape') closeYearModal();
+    return;
+  }
+  if (document.getElementById('capsule-modal').classList.contains('open')) {
+    if (e.key === 'Escape') document.getElementById('capsule-modal').classList.remove('open');
+    return;
+  }
+  if (e.key === 'ArrowRight') { e.preventDefault(); scrollToIndex(currentIndex + 1); }
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); scrollToIndex(currentIndex - 1); }
+});
+
+// ═══════════════════════════════════════════════════════
+// AUTOPLAY
+// ═══════════════════════════════════════════════════════
+const playBtn = document.getElementById('play-btn');
+const speedSel = document.getElementById('speed-select');
+
+function startAutoplay() {
+  isPlaying = true; playBtn.textContent = '⏸ Pause'; playBtn.classList.add('active');
+  const speed = parseInt(speedSel.value);
+  autoplayTimer = setInterval(() => {
+    if (currentIndex >= EVENTS.length - 1) { stopAutoplay(); return; }
+    scrollToIndex(currentIndex + 1);
+  }, speed);
+}
+function stopAutoplay() {
+  isPlaying = false; clearInterval(autoplayTimer);
+  playBtn.textContent = '▶ Play'; playBtn.classList.remove('active');
+}
+playBtn.addEventListener('click', () => isPlaying ? stopAutoplay() : startAutoplay());
+speedSel.addEventListener('change', () => { if (isPlaying) { stopAutoplay(); startAutoplay(); } });
+
+document.getElementById('prev-btn').addEventListener('click', () => scrollToIndex(currentIndex - 1));
+document.getElementById('next-btn').addEventListener('click', () => scrollToIndex(currentIndex + 1));
+
+// ═══════════════════════════════════════════════════════
+// WEB AUDIO
+// ═══════════════════════════════════════════════════════
+let currentSound = null;
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+function stopCurrentSound() {
+  if (currentSound) {
+    try { currentSound.stop(); } catch {}
+    currentSound = null;
+  }
+}
+
+function playEraSound(year) {
+  ensureAudio();
+  stopCurrentSound();
+  const era = getEra(year);
+  const now = audioCtx.currentTime;
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.setValueAtTime(0, now);
+  gainNode.gain.linearRampToValueAtTime(0.08, now + 0.5);
+  gainNode.gain.linearRampToValueAtTime(0, now + 3.5);
+  gainNode.connect(audioCtx.destination);
+
+  const eraName = era.name;
+  if (eraName === 'Victorian' || eraName === 'Edwardian') {
+    // Warm drone
+    [110, 220, 330].forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      const g = audioCtx.createGain(); g.gain.value = 1 / (i + 1) * 0.5;
+      osc.connect(g); g.connect(gainNode);
+      osc.start(now); osc.stop(now + 4);
+    });
+    currentSound = { stop: () => {} };
+  } else if (eraName === 'Great War' || eraName === 'WWII') {
+    // Dissonant
+    [80, 85, 120].forEach((freq) => {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sawtooth'; osc.frequency.value = freq;
+      const g = audioCtx.createGain(); g.gain.value = 0.15;
+      osc.connect(g); g.connect(gainNode);
+      osc.start(now); osc.stop(now + 4);
+    });
+    currentSound = { stop: () => {} };
+  } else if (eraName === 'Neon 80s') {
+    // Synth arpeggio
+    const freqs = [261, 329, 392, 523];
+    freqs.forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'square'; osc.frequency.value = freq;
+      const g = audioCtx.createGain(); g.gain.value = 0;
+      const t = now + i * 0.2;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.12, t + 0.05);
+      g.gain.linearRampToValueAtTime(0, t + 0.18);
+      osc.connect(g); g.connect(gainNode);
+      osc.start(now); osc.stop(now + 4);
+    });
+    currentSound = { stop: () => {} };
+  } else {
+    // Ambient pad
+    [220, 277, 330].forEach((freq) => {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      const g = audioCtx.createGain(); g.gain.value = 0.3;
+      osc.connect(g); g.connect(gainNode);
+      osc.start(now); osc.stop(now + 4);
+    });
+    currentSound = { stop: () => {} };
+  }
+}
+
+const soundBtn = document.getElementById('sound-btn');
+soundBtn.addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  soundBtn.classList.toggle('on', soundEnabled);
+  soundBtn.textContent = soundEnabled ? '♪ Sound On' : '♪ Sound';
+  if (!soundEnabled) stopCurrentSound();
+  else { ensureAudio(); playEraSound(EVENTS[currentIndex][0]); }
+});
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+updateEraColors(1859);
+updateMiniMap(0);
+cardEls[0]?.classList.add('active');
+// Initial scroll to first card
+requestAnimationFrame(() => scrollToIndex(0, 'instant'));
+</script>
+</body>
+</html>
