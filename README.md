@@ -1,10 +1,23 @@
 # Annum — Chronicle of Ages
 
-> A horizontal-scroll historical timeline webapp from the Big Bang to today, narrating history as a tale of heroes and villains.
+> A timeline webapp from the Big Bang to today, narrating history as a tale of heroes and villains. Vertical right-side scroller, era-based color themes, ~172 events.
 
 **Deployed via:** GitHub Pages (`index.html` at repo root)  
 **Branch:** `claude/timeline-webapp-bigben-2026-bq3CD`  
 **Live URL:** https://giovanniminchio98.github.io/Annum/ *(once GitHub Pages is enabled)*
+
+---
+
+## ⚡ Resume Protocol (READ THIS FIRST)
+
+This README is updated on every significant commit. If a session ends mid-work:
+
+1. Run `git log --oneline -10` to see what was last committed
+2. Read the **Current Status** table below — it's kept up to date
+3. Say: *"Continue the Annum timeline webapp — read the README"*
+4. Claude will pick up exactly from the last checkpoint
+
+**Commit policy:** README + code committed after every meaningful change (every ~10 events added, every feature completed, every layout change). Nothing is lost between sessions.
 
 ---
 
@@ -13,9 +26,12 @@
 | Phase | Status | Notes |
 |---|---|---|
 | Project setup | ✅ Done | Branch created, repo initialized |
-| Initial `index.html` draft | 🔄 In progress | Agent writing 1859–2026 version |
-| Expand to Big Bang → Today | ⏳ Pending | See full plan below |
-| README / CLAUDE.md continuity docs | ✅ Done | This file |
+| Initial `index.html` draft (1859–2026, horizontal) | ✅ Done | Committed `08cd230` — 168 cards, all features |
+| **Full rewrite: Big Bang → Today, vertical scroller** | 🔄 In progress | Agent writing now — ~172 events, 25 eras |
+| README continuity docs | ✅ Done | This file, updated regularly |
+
+**Last known good state:** `08cd230` — working app, 1859–2026, horizontal scroll, all interactive features.  
+**In progress:** Complete rewrite with Big Bang scope + vertical right-side scroller layout.
 
 ---
 
