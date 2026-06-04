@@ -1308,35 +1308,85 @@ function buildModal() {
   renderModalGrid('');
 }
 
+function parseYearQuery(q) {
+  // Accept: "1969", "-44", "44 bce", "44 bc", "500 ce", etc.
+  const isBce = /\b(bce|bc|b\.c\.)\b/.test(q);
+  const numMatch = q.match(/-?\d+/);
+  if (!numMatch) return null;
+  let n = parseInt(numMatch[0], 10);
+  if (isBce && n > 0) n = -n;
+  return n;
+}
+
+function addModalCell(ev, idx, closest) {
+  const cell = document.createElement('div');
+  cell.className = 'modal-item';
+  cell.style.borderLeftColor = ev.era.accent;
+  if (closest) cell.style.outline = `1px dashed ${ev.era.accent}`;
+
+  const yr = document.createElement('div');
+  yr.className = 'modal-item-year';
+  yr.style.color = ev.era.accent;
+  yr.textContent = formatYear(ev.year);
+
+  const tl = document.createElement('div');
+  tl.className = 'modal-item-title';
+  tl.style.color = ev.era.text;
+  tl.textContent = ev.title;
+
+  cell.appendChild(yr);
+  cell.appendChild(tl);
+
+  if (closest) {
+    const hint = document.createElement('div');
+    hint.style.cssText = 'font-size:0.65rem;opacity:0.5;margin-top:5px;font-style:italic;';
+    hint.textContent = 'Closest event to your search';
+    cell.appendChild(hint);
+  }
+
+  cell.addEventListener('click', () => { closeModal(); navigateTo(idx, true); });
+  modalGrid.appendChild(cell);
+}
+
 function renderModalGrid(query) {
   modalGrid.innerHTML = '';
   const q = query.toLowerCase().trim();
+
+  if (!q) {
+    EVENTS.forEach((ev, idx) => addModalCell(ev, idx, false));
+    return;
+  }
+
+  // Normal text/year/era filter
+  const hits = [];
   EVENTS.forEach((ev, idx) => {
-    const yearStr = formatYear(ev.year);
-    if (q && !ev.title.toLowerCase().includes(q) && !yearStr.toLowerCase().includes(q) && !ev.era.name.toLowerCase().includes(q)) return;
-
-    const cell = document.createElement('div');
-    cell.className = 'modal-item';
-    cell.style.borderLeftColor = ev.era.accent;
-
-    const yr = document.createElement('div');
-    yr.className = 'modal-item-year';
-    yr.style.color = ev.era.accent;
-    yr.textContent = yearStr;
-
-    const tl = document.createElement('div');
-    tl.className = 'modal-item-title';
-    tl.style.color = ev.era.text;
-    tl.textContent = ev.title;
-
-    cell.appendChild(yr);
-    cell.appendChild(tl);
-    cell.addEventListener('click', () => {
-      closeModal();
-      navigateTo(idx, true);
-    });
-    modalGrid.appendChild(cell);
+    if (ev.title.toLowerCase().includes(q) ||
+        formatYear(ev.year).toLowerCase().includes(q) ||
+        ev.era.name.toLowerCase().includes(q)) {
+      hits.push(idx);
+    }
   });
+
+  if (hits.length > 0) {
+    hits.forEach(idx => addModalCell(EVENTS[idx], idx, false));
+    return;
+  }
+
+  // No text match — try to parse as a year and find the closest event
+  const parsedYear = parseYearQuery(q);
+  if (parsedYear !== null) {
+    let bestIdx = 0, bestDist = Infinity;
+    EVENTS.forEach((ev, idx) => {
+      const d = Math.abs(ev.year - parsedYear);
+      if (d < bestDist) { bestDist = d; bestIdx = idx; }
+    });
+    addModalCell(EVENTS[bestIdx], bestIdx, true);
+  } else {
+    const msg = document.createElement('div');
+    msg.style.cssText = 'grid-column:1/-1;text-align:center;padding:2rem;opacity:0.4;font-style:italic;';
+    msg.textContent = 'No events found';
+    modalGrid.appendChild(msg);
+  }
 }
 
 modalSearch.addEventListener('input', () => renderModalGrid(modalSearch.value));
