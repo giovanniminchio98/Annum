@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Annum — A Chronicle of History</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -12,7 +12,7 @@
   --bg: #080818;
   --accent: #9a7ac8;
   --text: #d8d0f0;
-  --header-h: 88px;
+  --header-h: 108px;
   --scroller-w: 220px;
 }
 
@@ -30,12 +30,30 @@ html, body {
   position: fixed; top: 0; left: 0; right: 0; z-index: 200;
   height: var(--header-h);
   display: flex; flex-direction: column;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0,0,0,0.6);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 
-/* Row 1: identity info + fate meter */
+/* Title bar */
+#header-title-bar {
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  height: 36px;
+  border-bottom: 1px solid rgba(201,169,110,0.18);
+  background: rgba(0,0,0,0.25);
+}
+
+#app-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 0.8rem; font-weight: 700;
+  letter-spacing: 0.45em;
+  color: #c9a96e;
+  text-shadow: 0 0 24px rgba(201,169,110,0.45);
+  text-transform: uppercase;
+}
+
+/* Row 1: year/era + fate meter */
 #header-row1 {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 18px;
@@ -46,14 +64,6 @@ html, body {
 #header-info {
   display: flex; align-items: center; gap: 12px;
   flex-shrink: 0;
-}
-
-#app-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.1rem; font-weight: 900;
-  letter-spacing: 0.22em;
-  color: var(--accent);
-  transition: color 0.6s;
 }
 
 #current-year-display {
@@ -559,9 +569,10 @@ html, body {
 
 /* ── RESPONSIVE ── */
 @media (max-width: 640px) {
-  :root { --scroller-w: 150px; --header-h: 82px; }
+  :root { --scroller-w: 150px; --header-h: 100px; }
   #main { padding: 7px; gap: 7px; }
-  #app-title { font-size: 0.85rem; letter-spacing: 0.15em; }
+  #header-title-bar { height: 30px; }
+  #app-title { font-size: 0.68rem; letter-spacing: 0.4em; }
   #era-name-display { display: none; }
   #fate-meter span { display: none; }
   #fate-bar-wrap { width: 60px; }
@@ -587,9 +598,11 @@ html, body {
 
 <!-- HEADER -->
 <header id="header">
+  <div id="header-title-bar">
+    <div id="app-title">Annum</div>
+  </div>
   <div id="header-row1">
     <div id="header-info">
-      <div id="app-title">ANNUM</div>
       <div id="current-year-display">13.8B BCE</div>
       <div id="era-name-display">Cosmic</div>
     </div>
