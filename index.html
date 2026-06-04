@@ -12,7 +12,7 @@
   --bg: #080818;
   --accent: #9a7ac8;
   --text: #d8d0f0;
-  --header-h: 64px;
+  --header-h: 88px;
   --scroller-w: 220px;
 }
 
@@ -29,22 +29,28 @@ html, body {
 #header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 200;
   height: var(--header-h);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 18px;
+  display: flex; flex-direction: column;
   background: rgba(0,0,0,0.55);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+/* Row 1: identity info + fate meter */
+#header-row1 {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 18px;
+  flex: 1; min-height: 0;
   gap: 10px;
 }
 
-#header-left {
-  display: flex; align-items: center; gap: 14px;
+#header-info {
+  display: flex; align-items: center; gap: 12px;
   flex-shrink: 0;
 }
 
 #app-title {
   font-family: 'Playfair Display', serif;
-  font-size: 1.25rem; font-weight: 900;
+  font-size: 1.1rem; font-weight: 900;
   letter-spacing: 0.22em;
   color: var(--accent);
   transition: color 0.6s;
@@ -52,33 +58,27 @@ html, body {
 
 #current-year-display {
   font-family: 'Playfair Display', serif;
-  font-size: 1.5rem; font-weight: 700;
+  font-size: 1.35rem; font-weight: 700;
   color: var(--accent);
   transition: color 0.6s;
   white-space: nowrap;
-  min-width: 110px;
 }
 
 #era-name-display {
-  font-size: 0.72rem; font-weight: 500;
+  font-size: 0.7rem; font-weight: 500;
   color: rgba(255,255,255,0.5);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
-  max-width: 140px;
+  max-width: 130px;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-#header-center {
-  display: flex; align-items: center; gap: 10px;
-  flex: 1;
-  justify-content: center;
 }
 
 #fate-meter {
   display: flex; align-items: center; gap: 6px;
   font-size: 0.7rem; color: rgba(255,255,255,0.55);
+  flex-shrink: 0;
 }
 #fate-bar-wrap {
   width: 90px; height: 6px;
@@ -92,8 +92,11 @@ html, body {
   transition: width 0.6s ease;
 }
 
-#header-right {
-  display: flex; align-items: center; gap: 8px;
+/* Row 2: controls */
+#header-row2 {
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 18px 7px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -556,18 +559,19 @@ html, body {
 
 /* ── RESPONSIVE ── */
 @media (max-width: 640px) {
-  :root { --scroller-w: 150px; --header-h: 52px; }
+  :root { --scroller-w: 150px; --header-h: 82px; }
   #main { padding: 7px; gap: 7px; }
   #app-title { display: none; }
   #era-name-display { display: none; }
   #fate-meter span { display: none; }
   #fate-bar-wrap { width: 60px; }
+  #header-row2 { gap: 6px; padding-bottom: 6px; }
+  .hdr-btn { padding: 5px 8px; font-size: 0.7rem; }
   #detail-title { font-size: 1.15rem; }
   #detail-narrative { font-size: 0.84rem; }
   #detail-symbol { font-size: 10rem; }
   #detail-card { padding: 1rem 1.1rem; }
   .detail-nav { padding: 6px 12px; font-size: 0.75rem; }
-  #sound-btn { display: none; }
   .scroll-title { display: none; }
   .scroll-year { min-width: 38px; font-size: 0.65rem; }
 }
@@ -583,19 +587,19 @@ html, body {
 
 <!-- HEADER -->
 <header id="header">
-  <div id="header-left">
-    <div id="app-title">ANNUM</div>
-    <div id="current-year-display">13.8B BCE</div>
-    <div id="era-name-display">Cosmic</div>
-  </div>
-  <div id="header-center">
+  <div id="header-row1">
+    <div id="header-info">
+      <div id="app-title">ANNUM</div>
+      <div id="current-year-display">13.8B BCE</div>
+      <div id="era-name-display">Cosmic</div>
+    </div>
     <div id="fate-meter">
       <span>⚔️ Villain</span>
       <div id="fate-bar-wrap"><div id="fate-bar-hero" style="width:50%"></div></div>
       <span>Hero 🌟</span>
     </div>
   </div>
-  <div id="header-right">
+  <div id="header-row2">
     <button class="hdr-btn" id="sound-btn" title="Toggle ambient sound">🔇 Sound</button>
     <button class="hdr-btn" id="modal-btn">☰ All Events</button>
     <button class="hdr-btn" id="play-btn">▶ Play</button>
