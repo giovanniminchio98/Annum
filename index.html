@@ -126,6 +126,10 @@ html, body {
   position: fixed;
   top: var(--header-h); left: 0; right: 0; bottom: 0;
   display: flex;
+  padding: 10px;
+  gap: 10px;
+  background: var(--bg);
+  transition: background 0.6s ease;
 }
 
 /* ── DETAIL PANEL ── */
@@ -135,6 +139,9 @@ html, body {
   overflow: hidden;
   background: var(--bg);
   transition: background 0.6s ease;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.09);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
 }
 
 #detail-bg-gradient {
@@ -158,22 +165,28 @@ html, body {
 #detail-content {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
-  justify-content: center; align-items: center;
-  padding: 2.5rem 2rem;
+  justify-content: flex-start; align-items: center;
+  padding: 1.5rem 1.5rem 5rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   transition: opacity 0.35s ease, transform 0.35s ease;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
+#detail-content::-webkit-scrollbar { width: 4px; }
+#detail-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
 #detail-content.fading {
   opacity: 0;
-  transform: translateY(14px);
+  transform: translateY(10px);
 }
 
 #detail-card {
-  background: rgba(0,0,0,0.38);
+  background: rgba(0,0,0,0.42);
   border: 1px solid rgba(255,255,255,0.09);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   border-radius: 14px;
-  padding: 2rem 2.2rem;
-  max-width: 640px;
+  padding: 1.4rem 1.6rem;
+  max-width: 560px;
   width: 100%;
 }
 
@@ -215,7 +228,7 @@ html, body {
 
 #detail-title {
   font-family: 'Playfair Display', serif;
-  font-size: 1.8rem; font-weight: 700;
+  font-size: 1.45rem; font-weight: 700;
   color: var(--text);
   margin-bottom: 0.35rem;
   transition: color 0.6s;
@@ -230,10 +243,10 @@ html, body {
 }
 
 #detail-narrative {
-  font-size: 1rem; line-height: 1.75;
+  font-size: 0.9rem; line-height: 1.7;
   color: var(--text);
   opacity: 0.88;
-  margin-bottom: 1.3rem;
+  margin-bottom: 1rem;
   transition: color 0.6s;
 }
 
@@ -279,9 +292,11 @@ html, body {
   width: var(--scroller-w);
   flex-shrink: 0;
   position: relative;
-  border-left: 1px solid rgba(255,255,255,0.07);
-  background: rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.35);
   overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.09);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
 }
 
 /* Cursor line at 33% from top of scroller */
@@ -528,13 +543,40 @@ html, body {
   color: #000; border-color: var(--accent);
 }
 
+/* Play button distinct style */
+#play-btn {
+  background: rgba(255,255,255,0.12) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: background 0.2s, color 0.6s, border-color 0.6s, box-shadow 0.2s;
+}
+#play-btn:hover { background: rgba(255,255,255,0.22) !important; box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 40%, transparent); }
+#play-btn.active { background: var(--accent) !important; color: #000 !important; box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 60%, transparent); }
+
 /* ── RESPONSIVE ── */
 @media (max-width: 640px) {
-  :root { --scroller-w: 160px; }
-  #detail-title { font-size: 1.3rem; }
-  #detail-narrative { font-size: 0.88rem; }
+  :root { --scroller-w: 150px; --header-h: 52px; }
+  #main { padding: 7px; gap: 7px; }
+  #app-title { display: none; }
   #era-name-display { display: none; }
-  #detail-symbol { font-size: 14rem; }
+  #fate-meter span { display: none; }
+  #fate-bar-wrap { width: 60px; }
+  #detail-title { font-size: 1.15rem; }
+  #detail-narrative { font-size: 0.84rem; }
+  #detail-symbol { font-size: 10rem; }
+  #detail-card { padding: 1rem 1.1rem; }
+  .detail-nav { padding: 6px 12px; font-size: 0.75rem; }
+  #sound-btn { display: none; }
+  .scroll-title { display: none; }
+  .scroll-year { min-width: 38px; font-size: 0.65rem; }
+}
+
+@media (max-width: 390px) {
+  :root { --scroller-w: 120px; }
+  #detail-year { font-size: 1.6rem !important; }
+  #detail-title { font-size: 1rem; }
 }
 </style>
 </head>
@@ -876,6 +918,34 @@ function playEraSound(eraName) {
   gainNode.gain.setTargetAtTime(0, ctx.currentTime + 3.5, 0.5);
 }
 
+// ── HEROIC MELODY (autoplay accompaniment) ────────────────────────────────────
+const HEROIC_NOTES = [261.63, 329.63, 392.00, 523.25, 659.25, 523.25, 392.00, 329.63];
+let heroicNoteIdx = 0;
+function playHeroicNote() {
+  if (!soundEnabled) return;
+  const ctx = getAudioCtx();
+  const freq = HEROIC_NOTES[heroicNoteIdx % HEROIC_NOTES.length];
+  heroicNoteIdx++;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+  osc.type = 'triangle';
+  osc.frequency.value = freq;
+  filter.type = 'lowpass';
+  filter.frequency.value = 1800;
+  filter.Q.value = 0.7;
+  const t = ctx.currentTime;
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(0.16, t + 0.04);
+  gain.gain.setValueAtTime(0.12, t + 0.3);
+  gain.gain.linearRampToValueAtTime(0, t + 0.7);
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(t);
+  osc.stop(t + 0.9);
+}
+
 // ── DOM REFS ─────────────────────────────────────────────────────────────────
 const elCurrentYear   = document.getElementById('current-year-display');
 const elEraName       = document.getElementById('era-name-display');
@@ -1202,6 +1272,7 @@ function scheduleNext() {
       return;
     }
     navigateTo(currentIndex + 1);
+    playHeroicNote();
     scheduleNext();
   }, speed);
 }

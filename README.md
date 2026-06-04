@@ -28,18 +28,22 @@ This README is updated on every significant commit. If a session ends mid-work:
 | Project setup | ✅ Done | Branch created, repo initialized |
 | Initial draft (1859–2026, horizontal scroll) | ✅ Done | Commit `08cd230` — 168 cards, all features |
 | **Full rewrite: Big Bang → Today, vertical scroller** | ✅ Done | Commit `ceb365f` — 89 events, 25 eras |
+| **UI polish: card layout + mobile + heroic autoplay** | ✅ Done | Both panels as cards, scrollable text, iPhone-friendly, heroic music on autoplay |
 | Expand events: fill gaps to ~172 events | ⏳ Next | Add missing ancient/medieval/modern events |
 | Enable GitHub Pages | ⏳ Pending | Repo owner enables in GitHub Settings |
 | README continuity docs | ✅ Done | This file, updated regularly |
 
-**Last known good state:** `ceb365f` — full working app, Big Bang → June 2026, vertical scroller.
+**Last known good state:** UI polish commit (see above) — full working app, Big Bang → June 2026, vertical scroller, card layout.
 
-### What's in the current build (`ceb365f`)
+### What's in the current build
 - **89 events** from Big Bang (13.8B BCE) to Today (June 2026)  
 - **25 era color themes** with smooth CSS transitions  
-- **Layout:** center detail panel (era gradient bg, full narrative) + 220px right vertical scroller  
-- **Scroll:** fixed cursor line at 33% from top, nearest item = active, wheel anywhere scrolls the strip  
-- **Features:** auto-play, time capsule (localStorage), fate meter, Web Audio ambient sound, year/event selector modal with search + era chips, time gap display, keyboard ↑↓, touch swipe
+- **Layout:** both detail panel and scroller strip displayed as glass cards with `border-radius: 16px`, `10px` gap, `10px` padding around main area  
+- **Detail panel:** scrollable text inside the card (`overflow-y: auto`), top-aligned, smaller font sizes  
+- **Scroller:** right-side 220px card, fixed cursor line at 33% from top  
+- **Autoplay:** ▶ Play button highlighted with accent color; each step plays a heroic major-key arpeggio note via Web Audio (C major: C4→E4→G4→C5→E5 and back)  
+- **Mobile:** responsive at 640px (scroller shrinks to 150px, header compacts) and 390px (iPhone SE size)  
+- **Features:** auto-play, time capsule (localStorage), fate meter, Web Audio ambient sound + heroic melody, year/event selector modal with search + era chips, time gap display, keyboard ↑↓, touch swipe
 
 ### What's missing / next steps
 1. **More events** — currently 89, target ~172. Gaps mainly in:
@@ -230,4 +234,4 @@ Then Claude should:
 
 ---
 
-*Last updated: 2026-06-03 | Status: In active development*
+*Last updated: 2026-06-04 | Status: In active development*
